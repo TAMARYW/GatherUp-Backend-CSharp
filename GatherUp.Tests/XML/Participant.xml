@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ArrayOfParticipant xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Participant Id="1" HasPaid="false">
+    <Name>Tamar</Name>
+    <IsAttending xsi:nil="true" />
+    <AmountContributed>0</AmountContributed>
+    <MailingPreferences />
+  </Participant>
+  <Participant Id="2" HasPaid="false">
+    <Name>Avital</Name>
+    <IsAttending xsi:nil="true" />
+    <AmountContributed>0</AmountContributed>
+    <MailingPreferences />
+  </Participant>
+  <Participant Id="3" HasPaid="false">
+    <Name>Gili</Name>
+    <IsAttending xsi:nil="true" />
+    <AmountContributed>0</AmountContributed>
+    <MailingPreferences />
+  </Participant>
+  <Participant Id="4" HasPaid="false">
+    <Name>Noam</Name>
+    <IsAttending xsi:nil="true" />
+    <AmountContributed>0</AmountContributed>
+    <MailingPreferences />
+  </Participant>
+  <Participant Id="5" HasPaid="false">
+    <Name>Michal</Name>
+    <IsAttending xsi:nil="true" />
+    <AmountContributed>0</AmountContributed>
+    <MailingPreferences />
+  </Participant>
+  <Participant Id="6" HasPaid="false">
+    <Name>Gili</Name>
+    <IsAttending xsi:nil="true" />
+    <AmountContributed>0</AmountContributed>
+    <MailingPreferences />
+  </Participant>
+  <Participant Id="7" HasPaid="false">
+    <Name>Noam</Name>
+    <IsAttending xsi:nil="true" />
+    <AmountContributed>0</AmountContributed>
+    <MailingPreferences />
+  </Participant>
+  <Participant Id="8" HasPaid="false">
+    <Name>Michal</Name>
+    <IsAttending xsi:nil="true" />
+    <AmountContributed>0</AmountContributed>
+    <MailingPreferences />
+  </Participant>
+</ArrayOfParticipant>

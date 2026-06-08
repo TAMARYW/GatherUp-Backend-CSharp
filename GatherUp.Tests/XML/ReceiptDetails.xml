@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Receipts>
+  <Receipt Id="REC-56910946">
+    <Amount>450.50</Amount>
+    <Date>2026-06-07T11:54:45</Date>
+    <SavedFilePath>Receipts\REC-56910946.pdf</SavedFilePath>
+  </Receipt>
+  <Receipt Id="REC-00487219">
+    <Amount>450.50</Amount>
+    <Date>2026-06-07T12:09:40</Date>
+    <SavedFilePath>Receipts\REC-00487219.pdf</SavedFilePath>
+  </Receipt>
+</Receipts>
