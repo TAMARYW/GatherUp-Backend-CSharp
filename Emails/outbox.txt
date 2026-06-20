@@ -1,0 +1,16 @@
+[2026-06-18 13:53:17] To: tamar.gatherup@gmail.com | Subject: עדכון מ-GatherUp | Body: המשתתף 3 אישר הגעה לאירוע.
+[2026-06-18 13:53:17] To: tamar.gatherup@gmail.com | Subject: עדכון מ-GatherUp | Body: המשתתף 4 אישר הגעה לאירוע.
+[2026-06-18 13:53:17] To: tamar.gatherup@gmail.com | Subject: עדכון מ-GatherUp | Body: המשתתף 3 שילם 150.00₪.
+[2026-06-18 13:53:17] To: shira.gatherup@gmail.com | Subject: תזכורת תשלום לאירוע | Body: שלום שירה רפאל, נא להעביר את התשלום לפרטי החשבון הבאים: בנק הפועלים, חשבון 123-456789
+[2026-06-18 13:53:17] To: shira.gatherup@gmail.com | Subject: עדכון מ-GatherUp | Body: נפתח סקר חדש: סקר שעת התחלה.
+[2026-06-18 13:53:17] To: tamar.gatherup@gmail.com | Subject: עדכון מ-GatherUp | Body: המשתתף 4 הצביע '19:30' בשאלה 1 בסקר 3.
+[2026-06-18 13:53:17] To: tamar.gatherup@gmail.com | Subject: עדכון מ-GatherUp | Body: המשתתף 4 הצביע '21:00' בשאלה 1 בסקר 3.
+[2026-06-18 13:53:17] To: israel.gatherup@gmail.com | Subject: עדכון מ-GatherUp | Body: פרטי האירוע 1 עודכנו.
+[2026-06-18 14:01:27] To: tamar.gatherup@gmail.com | Subject: עדכון מ-GatherUp | Body: המשתתף 3 אישר הגעה לאירוע.
+[2026-06-18 14:01:27] To: tamar.gatherup@gmail.com | Subject: עדכון מ-GatherUp | Body: המשתתף 4 אישר הגעה לאירוע.
+[2026-06-18 14:01:27] To: shira.gatherup@gmail.com | Subject: תזכורת תשלום לאירוע | Body: שלום שירה רפאל, נא להעביר את התשלום לפרטי החשבון הבאים: בנק הפועלים, חשבון 123-456789
+[2026-06-18 14:01:27] To: tamar.gatherup@gmail.com | Subject: עדכון מ-GatherUp | Body: המשתתף 4 שילם 150.00₪.
+[2026-06-18 14:01:27] To: shira.gatherup@gmail.com | Subject: עדכון מ-GatherUp | Body: נפתח סקר חדש: סקר שעת התחלה.
+[2026-06-18 14:01:27] To: tamar.gatherup@gmail.com | Subject: עדכון מ-GatherUp | Body: המשתתף 4 הצביע '19:30' בשאלה 1 בסקר 4.
+[2026-06-18 14:01:27] To: tamar.gatherup@gmail.com | Subject: עדכון מ-GatherUp | Body: המשתתף 4 הצביע '21:00' בשאלה 1 בסקר 4.
+[2026-06-18 14:01:27] To: israel.gatherup@gmail.com | Subject: עדכון מ-GatherUp | Body: פרטי האירוע 1 עודכנו.

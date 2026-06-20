@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis; // נדרש עבור SetsRequiredMembers
-using System.Xml.Serialization;       // נדרש עבור הקישוטים של ה-XML
+using System.Diagnostics.CodeAnalysis;
+using System.Xml.Serialization;
 using GatherUp.Core.Interfaces;
 
 namespace GatherUp.Core.DO;
@@ -23,15 +23,21 @@ public class Event : IEntity
     [XmlElement("PricePerParticipant")]
     public decimal? PricePerParticipant { get; set; }
 
+    /// <summary>Person.Id של מנהל האירוע.</summary>
     [XmlElement("EventManagerId")]
     public required int EventManagerId { get; set; }
 
+    /// <summary>Person.Id של בעל האירוע (חייב להיות קיים ב-Person.xml).</summary>
     [XmlElement("EventHostId")]
     public required int EventHostId { get; set; }
 
-    [XmlArray("ParticipantIds")]
-    [XmlArrayItem("ParticipantId")]
-    public List<int> ParticipantIds { get; set; }
+    /// <summary>
+    /// המשתתפים לאירוע זה — מוכלים ישירות בתוך Event.xml.
+    /// כל Participant שומר PersonId (הפניה ל-Person.xml) ומצב פר-אירוע.
+    /// </summary>
+    [XmlArray("Participants")]
+    [XmlArrayItem("Participant")]
+    public List<Participant> Participants { get; set; }
 
     [XmlArray("VendorIds")]
     [XmlArrayItem("VendorId")]
@@ -44,7 +50,7 @@ public class Event : IEntity
     [SetsRequiredMembers]
     public Event()
     {
-        ParticipantIds = new List<int>();
+        Participants = new List<Participant>();
         VendorIds = new List<int>();
         PollIds = new List<int>();
     }

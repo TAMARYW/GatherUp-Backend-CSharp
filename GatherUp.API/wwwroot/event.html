@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>אירוע · GatherUp</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app-nav-slot"></div>
+<div class="page">
+  <div class="page-header">
+    <div>
+      <span class="eyebrow">אירוע מספר <span id="event-id-label"></span></span>
+      <h1 id="event-title">טוען...</h1>
+      <div class="ticket-meta" id="event-meta" style="margin-top:6px;"></div>
+    </div>
+    <a href="dashboard.html" class="btn btn-ghost btn-small">→ חזרה לאירועים</a>
+  </div>
+  <div id="page-alert"></div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="overview">סקירה</button>
+    <button class="tab-btn" data-tab="participants">משתתפים</button>
+    <button class="tab-btn" data-tab="polls">סקרים</button>
+    <button class="tab-btn" data-tab="financial">כספים</button>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div class="tab-panel active" id="tab-overview">
+    <div class="card" id="overview-view"></div>
+    <div class="card" id="overview-edit" style="display:none;margin-top:18px;">
+      <h3>עריכת פרטי האירוע</h3>
+      <form id="edit-event-form">
+        <div class="form-row">
+          <div class="field"><label>שם האירוע</label><input type="text" id="edit-name" required></div>
+          <div class="field"><label>תאריך</label><input type="date" id="edit-date"></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>מיקום</label><input type="text" id="edit-location"></div>
+          <div class="field"><label>מחיר למשתתף (₪)</label><input type="number" min="0" step="0.5" id="edit-price"></div>
+        </div>
+        <div class="row"><button type="submit" class="btn btn-primary">שמירת שינויים</button></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- PARTICIPANTS -->
+  <div class="tab-panel" id="tab-participants">
+    <div class="section-title">
+      <h2>👥 משתתפים</h2>
+      <label class="checkbox-row" style="margin:0;"><input type="checkbox" id="filter-unconfirmed"> רק מי שלא אישר</label>
+    </div>
+    <div id="manager-participant-tools" style="display:none;margin-bottom:20px;">
+      <div class="card">
+        <h3>הוספת משתתף לפי אימייל</h3>
+        <p class="muted">האדם חייב להיות רשום במערכת. אי אפשר להוסיף מישהו שלא נרשם.</p>
+        <form id="add-participant-form" class="form-row" style="align-items:flex-end;">
+          <div class="field"><label>אימייל</label><input type="email" id="p-email" required placeholder="israel@example.com"></div>
+          <button type="submit" class="btn btn-secondary">הוספה</button>
+        </form>
+        <hr class="divider">
+        <h3>הפצת הזמנות למי שלא אישר</h3>
+        <form id="mass-invite-form" class="row">
+          <input type="text" id="invite-link" placeholder="קישור לטופס אישור הגעה" style="flex:1;">
+          <button type="submit" class="btn btn-ghost">שליחה</button>
+        </form>
+      </div>
+    </div>
+    <div id="participants-list"></div>
+  </div>
+
+  <!-- POLLS -->
+  <div class="tab-panel" id="tab-polls">
+    <div class="section-title">
+      <h2>🗳️ סקרים</h2>
+      <button class="btn btn-primary btn-small" id="new-poll-btn" style="display:none;">+ סקר חדש</button>
+    </div>
+    <div class="card" id="new-poll-card" style="display:none;margin-bottom:20px;">
+      <h3>יצירת סקר חדש</h3>
+      <form id="new-poll-form">
+        <div class="form-row">
+          <div class="field"><label>שם הסקר</label><input type="text" id="poll-name" required></div>
+          <div class="field"><label>תאריך סגירה</label><input type="datetime-local" id="poll-closing" required></div>
+        </div>
+        <div class="field"><label>תיאור</label><textarea id="poll-desc"></textarea></div>
+        <div id="poll-questions"></div>
+        <button type="button" class="btn btn-ghost btn-small" id="add-question-btn" style="margin-bottom:14px;">+ שאלה</button>
+        <div class="row"><button type="submit" class="btn btn-primary">יצירת הסקר</button></div>
+      </form>
+    </div>
+    <div id="polls-list"></div>
+  </div>
+
+  <!-- FINANCIAL -->
+  <div class="tab-panel" id="tab-financial">
+    <div id="financial-summary"></div>
+    <div class="card" style="margin-top:20px;">
+      <h3>אישור תשלום משתתף</h3>
+      <p class="muted">המנהל מאשר תשלום בשם משתתף.</p>
+      <form id="payment-form" class="form-row" style="align-items:flex-end;">
+        <div class="field"><label>ת.ז (Id) של המשתתף</label><input type="number" min="1" id="pay-person-id" required></div>
+        <div class="field"><label>סכום (₪)</label><input type="number" min="0" step="0.5" id="pay-amount" required></div>
+        <button type="submit" class="btn btn-secondary">אישור תשלום</button>
+      </form>
+    </div>
+    <div id="manager-financial-tools" style="display:none;">
+      <div class="card" style="margin-top:20px;">
+        <h3>הוספת חוב לספק</h3>
+        <p class="muted">אם ה-Id לא קיים — זו רישום ספק חדש (עם השם והסכום שתזינו). אם ה-Id כבר קיים — הסכום פשוט יתווסף לחוב הקיים שלו.</p>
+        <form id="vendor-debt-form" class="form-row" style="align-items:flex-end;">
+          <div class="field"><label>Id ספק</label><input type="number" min="1" id="vendor-id" required></div>
+          <div class="field"><label>שם הספק</label><input type="text" id="vendor-name" required placeholder="קייטרינג אסאדו דלוקס"></div>
+          <div class="field"><label>סכום (₪)</label><input type="number" min="0" step="0.5" id="vendor-amount" required></div>
+          <button type="submit" class="btn btn-ghost">הוספה</button>
+        </form>
+      </div>
+      <div class="card" style="margin-top:20px;">
+        <h3>שליחת תזכורת תשלום</h3>
+        <p class="muted">ההודעה תישלח במייל לכל מי שטרם שילם.</p>
+        <form id="reminder-form" class="stack">
+          <textarea id="reminder-message" placeholder="לדוגמה: נא להעביר את התשלום עד סוף השבוע. פרטי חשבון: בנק הפועלים 123-456789" required></textarea>
+          <button type="submit" class="btn btn-ghost" style="align-self:flex-start;">שליחה</button>
+        </form>
+      </div>
+      <div class="card" style="margin-top:20px;">
+        <h3>העלאת קבלה</h3>
+        <form id="receipt-form">
+          <div class="form-row">
+            <div class="field"><label>Id ספק</label><input type="number" min="1" id="rec-vendor-id" required></div>
+            <div class="field"><label>מספר קבלה</label><input type="text" id="rec-number" required></div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>סכום (₪)</label><input type="number" min="0" step="0.5" id="rec-amount" required></div>
+            <div class="field"><label>תאריך</label><input type="date" id="rec-date" required></div>
+          </div>
+          <div class="field"><label>קובץ</label><input type="file" id="rec-file" required></div>
+          <button type="submit" class="btn btn-secondary">העלאה</button>
+        </form>
+      </div>
+      <div class="card" style="margin-top:20px;">
+        <div class="section-title"><h3>דוח קבלות</h3></div>
+        <div id="receipts-report"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+const currentUser = GatherUp.requireAuth();
+GatherUp.renderNav('dashboard');
+
+const params  = new URLSearchParams(window.location.search);
+const eventId = parseInt(params.get('id'), 10);
+if (!eventId) document.body.innerHTML = '<div class="page"><div class="alert alert-error">לא צויין מספר אירוע.</div></div>';
+document.getElementById('event-id-label').textContent = '#' + eventId;
+
+let eventData     = null;
+let isEventManager = false;
+
+function pageError(msg) {
+  document.getElementById('page-alert').innerHTML = `<div class="alert alert-error">⚠️ ${GatherUp.escapeHtml(msg)}</div>`;
+}
+
+// Tabs
+document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  if (btn.dataset.tab === 'participants') loadParticipants();
+  if (btn.dataset.tab === 'polls')        loadPolls();
+  if (btn.dataset.tab === 'financial')    loadFinancial();
+}));
+
+// ── OVERVIEW ──────────────────────────────────────────────────────────
+async function loadOverview() {
+  eventData      = await GatherUp.apiFetch('/api/events/' + eventId);
+  isEventManager = currentUser && eventData.eventManagerId === currentUser.id;
+
+  document.getElementById('event-title').textContent = eventData.name;
+  document.getElementById('event-meta').innerHTML    =
+    `<span>📅 ${GatherUp.formatDate(eventData.date)}</span>
+     <span>📍 ${GatherUp.escapeHtml(eventData.location || 'ללא מיקום')}</span>`;
+
+  document.getElementById('overview-view').innerHTML = `
+    <div class="stack">
+      <div class="row between"><span class="muted">שם</span><strong>${GatherUp.escapeHtml(eventData.name)}</strong></div>
+      <div class="row between"><span class="muted">תאריך</span><strong>${GatherUp.formatDate(eventData.date)}</strong></div>
+      <div class="row between"><span class="muted">מיקום</span><strong>${GatherUp.escapeHtml(eventData.location || '—')}</strong></div>
+      <div class="row between"><span class="muted">מחיר למשתתף</span><strong>${eventData.pricePerParticipant != null ? '₪'+eventData.pricePerParticipant : '—'}</strong></div>
+      <div class="row between"><span class="muted">Id מנהל</span><strong>#${eventData.eventManagerId}</strong></div>
+      <div class="row between"><span class="muted">Id בעל אירוע</span><strong>#${eventData.eventHostId}</strong></div>
+    </div>
+    ${isEventManager ? '<button class="btn btn-secondary btn-small" id="show-edit-btn" style="margin-top:18px;">✏️ עריכה</button>' : ''}`;
+
+  if (isEventManager) {
+    document.getElementById('show-edit-btn').addEventListener('click', () => {
+      document.getElementById('edit-name').value     = eventData.name;
+      document.getElementById('edit-date').value     = eventData.date ? eventData.date.substring(0,10) : '';
+      document.getElementById('edit-location').value = eventData.location || '';
+      document.getElementById('edit-price').value    = eventData.pricePerParticipant ?? '';
+      document.getElementById('overview-edit').style.display = 'block';
+    });
+    document.getElementById('manager-participant-tools').style.display = 'block';
+    document.getElementById('manager-financial-tools').style.display   = 'block';
+    document.getElementById('new-poll-btn').style.display              = '';
+  }
+}
+
+document.getElementById('edit-event-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  try {
+    await GatherUp.apiFetch('/api/events/' + eventId, { method: 'PUT', body: {
+      name:               document.getElementById('edit-name').value.trim(),
+      date:               document.getElementById('edit-date').value || null,
+      location:           document.getElementById('edit-location').value.trim() || null,
+      pricePerParticipant: document.getElementById('edit-price').value ? parseFloat(document.getElementById('edit-price').value) : null,
+    }});
+    GatherUp.showToast('הפרטים עודכנו');
+    document.getElementById('overview-edit').style.display = 'none';
+    await loadOverview();
+  } catch (err) { GatherUp.showToast(err.message, 'error'); }
+});
+
+// ── PARTICIPANTS ───────────────────────────────────────────────────────
+async function loadParticipants() {
+  const list = document.getElementById('participants-list');
+  list.innerHTML = '<div class="empty-state"><span class="spinner"></span></div>';
+  try {
+    const endpoint = document.getElementById('filter-unconfirmed').checked
+      ? '/api/participants/event/' + eventId + '/unconfirmed'
+      : '/api/participants/event/' + eventId;
+    const participants = await GatherUp.apiFetch(endpoint);
+
+    if (!participants.length) {
+      list.innerHTML = '<div class="empty-state"><div class="icon">🙋</div>אין משתתפים.</div>';
+      return;
+    }
+    list.innerHTML = `<table>
+      <thead><tr><th>Id</th><th>שם</th><th>אימייל</th><th>הגעה</th><th>תשלום</th><th>פעולה</th></tr></thead>
+      <tbody>${participants.map(p => `<tr>
+        <td>${p.personId}</td>
+        <td>${GatherUp.escapeHtml(p.name)}</td>
+        <td>${GatherUp.escapeHtml(p.email)}</td>
+        <td>${p.isAttending === true ? '<span class="badge badge-good">אישר/ה</span>'
+           : p.isAttending === false ? '<span class="badge badge-bad">ביטל/ה</span>'
+           : '<span class="badge badge-warn">לא ענה/תה</span>'}</td>
+        <td>${p.hasPaid ? `<span class="badge badge-good">שולם ₪${p.amountContributed}</span>` : '<span class="badge badge-neutral">לא שולם</span>'}</td>
+        <td>${p.personId === currentUser.id
+          ? `<button class="btn btn-secondary btn-small" onclick="confirmAttendance(true)">אישור הגעה שלי</button>
+             <button class="btn btn-ghost btn-small"     onclick="confirmAttendance(false)">ביטול הגעה שלי</button>`
+          : '—'}</td>
+      </tr>`).join('')}</tbody></table>`;
+  } catch (err) {
+    list.innerHTML = `<div class="alert alert-error">⚠️ ${GatherUp.escapeHtml(err.message)}</div>`;
+  }
+}
+
+// אישור הגעה — אדם על עצמו בלבד; endpoint חדש
+async function confirmAttendance(isAttending) {
+  try {
+    await GatherUp.apiFetch('/api/participants/event/' + eventId + '/attendance', {
+      method: 'PUT', body: { isAttending },
+    });
+    GatherUp.showToast(isAttending ? 'אישרת הגעה!' : 'ביטלת הגעה');
+    loadParticipants();
+  } catch (err) { GatherUp.showToast(err.message, 'error'); }
+}
+
+document.getElementById('filter-unconfirmed').addEventListener('change', loadParticipants);
+
+document.getElementById('add-participant-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  try {
+    const result = await GatherUp.apiFetch('/api/participants/event/' + eventId, {
+      method: 'POST',
+      body: { email: document.getElementById('p-email').value.trim() },
+    });
+    GatherUp.showToast('המשתתף נוסף!');
+    document.getElementById('add-participant-form').reset();
+    loadParticipants();
+  } catch (err) { GatherUp.showToast(err.message, 'error'); }
+});
+
+document.getElementById('mass-invite-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  try {
+    await GatherUp.apiFetch('/api/participants/event/' + eventId + '/invitations', {
+      method: 'POST', body: { confirmationFormLink: document.getElementById('invite-link').value.trim() },
+    });
+    GatherUp.showToast('ההזמנות נשלחו');
+  } catch (err) { GatherUp.showToast(err.message, 'error'); }
+});
+
+// ── POLLS ──────────────────────────────────────────────────────────────
+let qCounter = 0;
+function addQuestion() {
+  qCounter++;
+  const div = document.createElement('div');
+  div.className = 'card';
+  div.style = 'background:var(--bg-soft);margin-bottom:12px;';
+  div.innerHTML = `
+    <div class="row between"><strong>שאלה</strong><button type="button" class="btn btn-ghost btn-small" onclick="this.closest('div.card').remove()">הסרה</button></div>
+    <div class="field"><label>נוסח</label><input type="text" class="q-text" required></div>
+    <div class="field"><label>אפשרויות (שורה לכל אחת)</label><textarea class="q-options" required placeholder="ירושלים&#10;תל אביב"></textarea></div>`;
+  document.getElementById('poll-questions').appendChild(div);
+}
+document.getElementById('add-question-btn').addEventListener('click', addQuestion);
+document.getElementById('new-poll-btn').addEventListener('click', () => {
+  document.getElementById('new-poll-card').style.display = 'block';
+  if (!document.getElementById('poll-questions').children.length) addQuestion();
+});
+
+document.getElementById('new-poll-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const questions = Array.from(document.querySelectorAll('#poll-questions > div')).map(b => ({
+    questionText: b.querySelector('.q-text').value.trim(),
+    options: b.querySelector('.q-options').value.split('\n').map(o => o.trim()).filter(Boolean),
+  }));
+  if (!questions.length) { GatherUp.showToast('הוסיפו לפחות שאלה אחת', 'error'); return; }
+  try {
+    let closing = document.getElementById('poll-closing').value;
+    if (closing.length === 16) closing += ':00';
+    await GatherUp.apiFetch('/api/polls/event/' + eventId, { method: 'POST', body: {
+      name: document.getElementById('poll-name').value.trim(),
+      description: document.getElementById('poll-desc').value.trim() || null,
+      closingDate: closing,
+      questions,
+    }});
+    GatherUp.showToast('הסקר נוצר!');
+    document.getElementById('new-poll-form').reset();
+    document.getElementById('poll-questions').innerHTML = '';
+    document.getElementById('new-poll-card').style.display = 'none';
+    loadPolls();
+  } catch (err) { GatherUp.showToast(err.message, 'error'); }
+});
+
+async function loadPolls() {
+  const list = document.getElementById('polls-list');
+  list.innerHTML = '<div class="empty-state"><span class="spinner"></span></div>';
+  try {
+    const polls = await GatherUp.apiFetch('/api/polls/event/' + eventId);
+    if (!polls.length) { list.innerHTML = '<div class="empty-state"><div class="icon">🗳️</div>אין סקרים.</div>'; return; }
+    list.innerHTML = polls.map(poll => {
+      const open = !poll.closingDate || new Date(poll.closingDate) > new Date();
+      return `<div class="card" style="margin-bottom:16px;">
+        <div class="row between">
+          <div><h3 style="margin-bottom:2px;">${GatherUp.escapeHtml(poll.name)}</h3>
+               <span class="muted">${GatherUp.escapeHtml(poll.description||'')}</span></div>
+          <span class="badge ${open ? 'badge-good' : 'badge-neutral'}">${open ? 'פתוח' : 'סגור'} · ${GatherUp.formatDateTime(poll.closingDate)}</span>
+        </div>
+        <div class="poll-q" data-poll-id="${poll.id}" data-open="${open}" style="margin-top:14px;"></div>
+        <button class="btn btn-ghost btn-small show-res" data-poll-id="${poll.id}" style="margin-top:10px;">📊 תוצאות</button>
+        <div class="poll-res" data-poll-id="${poll.id}" style="margin-top:8px;"></div>
+      </div>`;
+    }).join('');
+
+    polls.forEach(poll => {
+      const el   = document.querySelector(`.poll-q[data-poll-id="${poll.id}"]`);
+      const open = el.dataset.open === 'true';
+      el.innerHTML = poll.questions.map(q => `
+        <div class="field">
+          <label>${GatherUp.escapeHtml(q.questionText)}</label>
+          ${q.options.map(opt => `<label class="checkbox-row">
+            <input type="radio" name="p${poll.id}q${q.id}" value="${GatherUp.escapeHtml(opt)}" ${!open ? 'disabled' : ''}>
+            ${GatherUp.escapeHtml(opt)}</label>`).join('')}
+          ${open ? `<button type="button" class="btn btn-secondary btn-small vote-btn" data-poll="${poll.id}" data-q="${q.id}" style="margin-top:6px;">הצבעה</button>` : ''}
+        </div>`).join('');
+
+      el.querySelectorAll('.vote-btn').forEach(btn => btn.addEventListener('click', async () => {
+        const sel = el.querySelector(`input[name="p${btn.dataset.poll}q${btn.dataset.q}"]:checked`);
+        if (!sel) { GatherUp.showToast('בחרו אפשרות', 'error'); return; }
+        try {
+          await GatherUp.apiFetch(`/api/polls/${btn.dataset.poll}/questions/${btn.dataset.q}/vote`,
+            { method: 'POST', body: { chosenOption: sel.value } });
+          GatherUp.showToast('ההצבעה נקלטה!');
+        } catch (err) { GatherUp.showToast(err.message, 'error'); }
+      }));
+    });
+
+    document.querySelectorAll('.show-res').forEach(btn => btn.addEventListener('click', async () => {
+      const resEl = document.querySelector(`.poll-res[data-poll-id="${btn.dataset.pollId}"]`);
+      resEl.innerHTML = '<span class="spinner"></span>';
+      try {
+        const data = await GatherUp.apiFetch('/api/polls/' + btn.dataset.pollId + '/results');
+        resEl.innerHTML = data.poll.questions.map(q => {
+          const qr = data.results[q.id] || {};
+          return `<strong>${GatherUp.escapeHtml(q.questionText)}</strong>
+            <div class="stack" style="gap:4px;margin:4px 0 10px;">
+              ${Object.entries(qr).length ? Object.entries(qr).map(([opt,pct]) => `
+                <div>
+                  <div class="row between" style="font-size:.85rem;"><span>${GatherUp.escapeHtml(opt)}</span><span>${pct}%</span></div>
+                  <div style="background:var(--border);border-radius:6px;height:8px;overflow:hidden;">
+                    <div style="background:var(--primary);width:${pct}%;height:100%;"></div></div>
+                </div>`).join('') : '<span class="muted">אין הצבעות</span>'}
+            </div>`;
+        }).join('');
+      } catch (err) { resEl.innerHTML = `<span class="muted">⚠️ ${GatherUp.escapeHtml(err.message)}</span>`; }
+    }));
+  } catch (err) {
+    list.innerHTML = `<div class="alert alert-error">⚠️ ${GatherUp.escapeHtml(err.message)}</div>`;
+  }
+}
+
+// ── FINANCIAL ──────────────────────────────────────────────────────────
+async function loadFinancial() {
+  const el = document.getElementById('financial-summary');
+  el.innerHTML = '<div class="empty-state"><span class="spinner"></span></div>';
+  try {
+    const s = await GatherUp.apiFetch('/api/financial/event/' + eventId + '/summary');
+    el.innerHTML = `<div class="form-row">
+      <div class="card" style="flex:1;"><span class="muted">הכנסות</span>
+        <h2 style="color:var(--primary-dark);">₪${s.totalIncome}</h2>
+        <span class="muted">${(s.paidParticipants||[]).length} שילמו</span></div>
+      <div class="card" style="flex:1;"><span class="muted">חובות לספקים</span>
+        <h2 style="color:var(--danger);">₪${s.totalOutgoing}</h2></div>
+      <div class="card" style="flex:1;"><span class="muted">נטו</span>
+        <h2 style="color:${s.netBalance>=0 ? 'var(--primary-dark)' : 'var(--danger)'};">₪${s.netBalance}</h2></div>
+    </div>`;
+    if (isEventManager) loadReceiptsReport();
+  } catch (err) {
+    el.innerHTML = `<div class="alert alert-error">⚠️ ${GatherUp.escapeHtml(err.message)}</div>`;
+  }
+}
+
+async function loadReceiptsReport() {
+  const el = document.getElementById('receipts-report');
+  el.innerHTML = '<span class="spinner"></span>';
+  try {
+    const receipts = await GatherUp.apiFetch('/api/financial/event/' + eventId + '/receipts');
+    if (!receipts.length) { el.innerHTML = '<span class="muted">אין קבלות.</span>'; return; }
+    el.innerHTML = `<table><thead><tr><th>מספר קבלה</th><th>סכום</th></tr></thead><tbody>
+      ${receipts.map(r => `<tr><td>${GatherUp.escapeHtml(r.receiptNumber ?? r.item1 ?? '—')}</td>
+        <td>₪${r.amount ?? r.item2 ?? '—'}</td></tr>`).join('')}
+    </tbody></table>`;
+  } catch (err) { el.innerHTML = `<span class="muted">⚠️ ${GatherUp.escapeHtml(err.message)}</span>`; }
+}
+
+// אישור תשלום — מנהל בלבד; route חדש עם eventId+personId
+document.getElementById('payment-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const personId = document.getElementById('pay-person-id').value;
+  try {
+    await GatherUp.apiFetch(`/api/financial/event/${eventId}/person/${personId}/payment`, {
+      method: 'POST', body: { amount: parseFloat(document.getElementById('pay-amount').value) },
+    });
+    GatherUp.showToast('התשלום אושר');
+    document.getElementById('payment-form').reset();
+    loadFinancial();
+  } catch (err) { GatherUp.showToast(err.message, 'error'); }
+});
+
+document.getElementById('vendor-debt-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  try {
+    await GatherUp.apiFetch(`/api/financial/event/${eventId}/vendor/${document.getElementById('vendor-id').value}/debt`, {
+      method: 'POST', body: {
+        name:   document.getElementById('vendor-name').value.trim(),
+        amount: parseFloat(document.getElementById('vendor-amount').value),
+      },
+    });
+    GatherUp.showToast('הספק נרשם/עודכן בהצלחה');
+    document.getElementById('vendor-debt-form').reset();
+    loadFinancial();
+  } catch (err) { GatherUp.showToast(err.message, 'error'); }
+});
+
+document.getElementById('reminder-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  try {
+    await GatherUp.apiFetch('/api/financial/event/' + eventId + '/reminders', {
+      method: 'POST', body: { message: document.getElementById('reminder-message').value.trim() },
+    });
+    GatherUp.showToast('התזכורות נשלחו');
+    document.getElementById('reminder-form').reset();
+  } catch (err) { GatherUp.showToast(err.message, 'error'); }
+});
+
+document.getElementById('receipt-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  try {
+    const formData = new FormData();
+    formData.append('receiptNumber', document.getElementById('rec-number').value.trim());
+    formData.append('amount',        document.getElementById('rec-amount').value);
+    formData.append('date',          document.getElementById('rec-date').value);
+    formData.append('file',          document.getElementById('rec-file').files[0]);
+    await GatherUp.apiFetch('/api/financial/vendor/' + document.getElementById('rec-vendor-id').value + '/receipt', {
+      method: 'POST', body: formData, isForm: true,
+    });
+    GatherUp.showToast('הקבלה הועלתה');
+    document.getElementById('receipt-form').reset();
+    loadReceiptsReport();
+  } catch (err) { GatherUp.showToast(err.message, 'error'); }
+});
+
+// אתחול
+loadOverview().catch(err => pageError(err.message));
+</script>
+</body>
+</html>

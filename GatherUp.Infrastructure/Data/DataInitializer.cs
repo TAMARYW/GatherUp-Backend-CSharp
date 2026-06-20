@@ -5,113 +5,136 @@ using GatherUp.Core.Interfaces;
 
 namespace GatherUp.Infrastructure.Data;
 
+/// <summary>
+/// אתחול נתוני דמו.
+/// Person.xml — זהויות בלבד.
+/// Event.xml  — כל אירוע מכיל את רשימת ה-Participants שלו (PersonId + מצב).
+/// </summary>
 public static class DataInitializer
 {
     public static void Initialize(
-        IRepository<Event> eventRepository,
-        IRepository<EventManager> managerRepository,
-        IRepository<EventHost> hostRepository,
-        IRepository<Participant> participantRepository,
-        IRepository<VendorAllocation> vendorRepository,
-        IRepository<Poll> pollRepository)
+        IRepository<Person>          personRepo,
+        IRepository<Event>           eventRepo,
+        IRepository<VendorAllocation> vendorRepo,
+        IRepository<Poll>            pollRepo)
     {
-        var manager = new EventManager
+        // ── אנשים ──────────────────────────────────────────────────────
+        var tamar = new Person
         {
-            Name = "תמר לוי",
-            Email = "tamar.gatherup@gmail.com" 
+            Name  = "תמר לוי",
+            Email = "ty0556736234@gmail.com",
+            NotificationPreferences = new List<NotificationType>
+            {
+                NotificationType.AttendanceConfirmed,
+                NotificationType.PaymentMade,
+                NotificationType.PollAnswered
+            }
         };
-        managerRepository.Add(manager);
+        var avital = new Person { Name = "אביטל כהן",    Email = "avital.gatherup@gmail.com" };
+        var israel = new Person
+        {
+            Name  = "ישראל ישראלי",
+            Email = "israel.gatherup@gmail.com",
+            NotificationPreferences = new List<NotificationType> { NotificationType.EventDetailsChanged }
+        };
+        var shira = new Person
+        {
+            Name  = "שירה רפאל",
+            Email = "shira.gatherup@gmail.com",
+            NotificationPreferences = new List<NotificationType> { NotificationType.PollCreated }
+        };
 
-        var host = new EventHost
-        {
-            Name = "אביטל כהן",
-            Email = "avital.gatherup@gmail.com" 
-        };
-        hostRepository.Add(host);
+        personRepo.Add(tamar);
+        personRepo.Add(avital);
+        personRepo.Add(israel);
+        personRepo.Add(shira);
 
-        var participant1 = new Participant
-        {
-            Name = "ישראל ישראלי",
-            Email = "tamar.gatherup@gmail.com", 
-            IsAttending = true,
-            HasPaid = true,
-            AmountContributed = 150.00m
-        };
-        participant1.MailingPreferences.Add("שינויי לו\"ז");
-        participantRepository.Add(participant1);
+        // ── ספקים ─────────────────────────────────────────────────────
+        var vendor1 = new VendorAllocation { Name = "קייטרינג אבי", AmountOwed = 2000 };
+        vendorRepo.Add(vendor1);
 
-        var participant2 = new Participant
+        // ── סקרים ─────────────────────────────────────────────────────
+        var poll1 = new Poll
         {
-            Name = "שירה רפאל",
-            Email = "avital.gatherup@gmail.com",
-            IsAttending = null, // טרם השיבה
-            HasPaid = false,
-            AmountContributed = 0m
+            Name        = "פרטים ראשוניים",
+            Description = "בחירת תאריך ומיקום לאירוע",
+            ClosingDate = DateTime.Now.AddDays(7),
         };
-        participant2.MailingPreferences.Add("סקרים חדשים");
-        participantRepository.Add(participant2);
+        poll1.Questions.Add(new PollQuestion
+        {
+            Id           = 1,
+            QuestionText = "מתי מתאים לכם?",
+            Options      = new List<string> { "יום שישי", "מוצאי שבת", "ראשון בערב" }
+        });
 
-        var initialPoll = new Poll
+        var poll2 = new Poll
         {
-            Name = "סקר פרטים התחלתיים לאירוע",
-            Description = "נא להצביע על התאריך והמיקום המועדפים עליכם"
+            Name        = "בחירת מיקום",
+            ClosingDate = DateTime.Now.AddDays(14),
         };
-        
-        var q1 = new PollQuestion 
-        { 
-            Id = 1, 
-            QuestionText = "מהו המיקום המועדף עליכם?", 
-            Options = new List<string> { "תל אביב", "ירושלים", "חיפה" } 
-        };
-        var q2 = new PollQuestion 
-        { 
-            Id = 2, 
-            QuestionText = "באיזה תאריך נוח לכם?", 
-            Options = new List<string> { "15/06/2026", "22/06/2026" } 
-        };
-        initialPoll.Questions.Add(q1);
-        initialPoll.Questions.Add(q2);
-        pollRepository.Add(initialPoll);
+        poll2.Questions.Add(new PollQuestion
+        {
+            Id           = 1,
+            QuestionText = "איפה להתכנס?",
+            Options      = new List<string> { "תל אביב", "ירושלים", "ראשון לציון" }
+        });
 
-        var followUpPoll = new Poll
-        {
-            Name = "סקר המשך - כיבוד ואוכל",
-            Description = "בחירת סגנון הקייטרינג לאירוע"
-        };
-        var q3 = new PollQuestion
-        {
-            Id = 1,
-            QuestionText = "איזה סוג אוכל תרצו?",
-            Options = new List<string> { "בשרי", "חלבי", "טבעוני" }
-        };
-        followUpPoll.Questions.Add(q3);
-        pollRepository.Add(followUpPoll);
+        pollRepo.Add(poll1);
+        pollRepo.Add(poll2);
 
-        var vendor = new VendorAllocation
+        // ── אירועים עם משתתפים מוכלים ────────────────────────────────
+        // אירוע 1: תמר מנהלת, אביטל בעלת אירוע, ישראל ושירה משתתפים
+        var event1 = new Event
         {
-            Name = "קייטרינג אסאדו דלוקס",
-            AmountOwed = 5000.00m, // חוב של 5000 ש"ח
-            HasReceipt = true
+            Name                = "ערב גיבוש צוות GatherUp",
+            Location            = "אולמי הגן הירוק, ראשון לציון",
+            PricePerParticipant = 150,
+            EventManagerId      = tamar.Id,
+            EventHostId         = avital.Id,
         };
-        vendor.Receipts.Add(new ReceiptDetails("REC-10024", 1500.00m, DateTime.Now.AddDays(-5)));
-        vendorRepository.Add(vendor);
-
-        var newEvent = new Event
+        event1.Participants.Add(new Participant
         {
-            Name = "ערב גיבוש צוות GatherUp",
-            Date = null, 
-            Location = null, 
-            PricePerParticipant = 150.00m,
-            EventManagerId = manager.Id, 
-            EventHostId = host.Id        
-        };
-        
-        newEvent.ParticipantIds.Add(participant1.Id);
-        newEvent.ParticipantIds.Add(participant2.Id);
-        newEvent.VendorIds.Add(vendor.Id);
-        newEvent.PollIds.Add(initialPoll.Id);
-        newEvent.PollIds.Add(followUpPoll.Id);
+            PersonId          = israel.Id,
+            IsAttending       = true,
+            HasPaid           = true,
+            AmountContributed = 300
+        });
+        event1.Participants.Add(new Participant
+        {
+            PersonId          = shira.Id,
+            IsAttending       = true,
+            HasPaid           = true,
+            AmountContributed = 150
+        });
+        // תמר גם מנהלת אירוע זה וגם משתתפת — כשני "כובעים" מאותה Person
+        event1.Participants.Add(new Participant
+        {
+            PersonId          = tamar.Id,
+            IsAttending       = true,
+            HasPaid           = false,
+            AmountContributed = 0
+        });
+        event1.VendorIds.Add(vendor1.Id);
+        event1.PollIds.Add(poll1.Id);
+        event1.PollIds.Add(poll2.Id);
+        eventRepo.Add(event1);
 
-        eventRepository.Add(newEvent);
+        // אירוע 2: ישראל מנהל, תמר בעלת אירוע, שירה משתתפת
+        // מדגים: אדם אחד (ישראל) מנהל אירוע זה ומשתתף באירוע 1
+        var event2 = new Event
+        {
+            Name                = "ארוחת צהריים עסקית",
+            Date                = DateTime.Now.AddDays(30),
+            Location            = "מסעדת הגורמה, תל אביב",
+            PricePerParticipant = 120,
+            EventManagerId      = israel.Id,
+            EventHostId         = tamar.Id,
+        };
+        event2.Participants.Add(new Participant
+        {
+            PersonId    = shira.Id,
+            IsAttending = null,  // טרם השיבה
+        });
+        eventRepo.Add(event2);
     }
 }

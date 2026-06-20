@@ -1,8 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using GatherUp.BL;
 using GatherUp.Core.DO;
 using GatherUp.Core.Interfaces;
+using GatherUp.Infrastructure.Data;
+using GatherUp.Infrastructure.Notifications;
 using GatherUp.Infrastructure.Repositories;
 
 namespace GatherUp.TestProject;
@@ -11,71 +15,170 @@ class Program
 {
     static void Main(string[] args)
     {
-        Console.WriteLine("=== Starting GatherUp Infrastructure Test ===");
+        Console.WriteLine("=== GatherUp - הרצת זרימה מלאה מקצה לקצה ===\n");
 
-        string xmlDirectory = "XML";
-        string receiptsDirectory = "Receipts";
+        if (!Directory.Exists("XML")) Directory.CreateDirectory("XML");
 
-        if (!Directory.Exists(xmlDirectory)) Directory.CreateDirectory(xmlDirectory);
-        if (!Directory.Exists(receiptsDirectory)) Directory.CreateDirectory(receiptsDirectory);
+        // -----------------------------------------------------------------
+        // 1. הקמת הריפוזיטורי המוחשי מבוסס ה-XML (היחיד שמכיר את זה הוא Main)
+        // -----------------------------------------------------------------
+        IRepository<Person> personRepo = new XmlRepository<Person>(Path.Combine("XML", "Person.xml"), useSerializer: true);
+        IRepository<Event> eventRepo = new XmlRepository<Event>(Path.Combine("XML", "Event.xml"), useSerializer: true);
+        IRepository<VendorAllocation> vendorRepo = new XmlRepository<VendorAllocation>(Path.Combine("XML", "VendorAllocation.xml"), useSerializer: true);
+        IRepository<Poll> pollRepo = new XmlRepository<Poll>(Path.Combine("XML", "Poll.xml"), useSerializer: true);
+        // נוסף בשלב 4: ריפוזיטורי הקבלות, שהיה קיים בקוד אך לא חובר אף פעם בפועל.
+        IReceiptRepository receiptRepo = new ReceiptRepository();
 
-        RunWithXmlRepository();
-
-        Console.WriteLine("\n=== Test Finished. Check 'XML' and 'Receipts' folders! ===");
-        Console.ReadLine();
-    }
-
-    static void RunWithXmlRepository()
-    {
-        Console.WriteLine("\n--- Running with XML File Repository ---");
-
-        IRepository<Participant> participantRepo = new XmlRepository<Participant>(Path.Combine("XML", "Participant.xml"), useSerializer: true);
-        if (!participantRepo.GetAll().GetEnumerator().MoveNext())
+        // נתוני דמו - רק בהרצה הראשונה (אם ה-XML עוד ריק)
+        if (!eventRepo.GetAll().Any())
         {
-            Console.WriteLine("Initializing default data into XML...");
-            participantRepo.Add(new Participant { Id = 1, Name = "Tamar" });
-            participantRepo.Add(new Participant { Id = 2, Name = "Avital" });
+            Console.WriteLine("מאתחלת נתוני דמו ל-XML...\n");
+            DataInitializer.Initialize(eventRepo, personRepo, vendorRepo, pollRepo);
         }
 
-        Console.WriteLine("\nAdding 3 new participants...");
-        participantRepo.Add(new Participant { Name = "Gili" });
-        participantRepo.Add(new Participant { Name = "Noam" });
-        participantRepo.Add(new Participant { Name = "Michal" });
+        // -----------------------------------------------------------------
+        // 2. מיד לאחר הקמת הריפוזיטורי - מקימים את שירותי הלוגיקה ומזריקים להם
+        //    אותו, וכן מקימים מופע אחד ומשותף של "תחנת השידור" (EventNotifier)
+        //    שמשמש גם כ-IEventPublisher (למי שמכריז) וגם כשני ממשקי ההאזנה
+        //    (למי שמאזין) - בלי ששני הצדדים מכירים זה את זה.
+        // -----------------------------------------------------------------
+        var eventNotifier = new EventNotifier();
+        IEmailService emailService = new FileEmailService(Path.Combine("Emails", "outbox.txt"));
 
-        Console.WriteLine("\nCurrent Participants List from XML:");
-        foreach (var p in participantRepo.GetAll())
-        {
-            Console.WriteLine($"- ID: {p.Id}, Name: {p.Name}");
-        }
+        var userService = new UserService(personRepo);
+        var dashboardService = new EventDashboardService(eventRepo, personRepo, eventNotifier);
+        var participantService = new ParticipantService(personRepo, eventRepo, emailService, eventNotifier);
+        var financeService = new FinanceService(vendorRepo, personRepo, eventRepo, receiptRepo, emailService, eventNotifier);
+        var pollService = new PollService(pollRepo, eventRepo, eventNotifier);
 
-        Console.WriteLine("\n--- Testing Receipt Upload & XML Logging ---");
-        ReceiptRepository receiptRepo = new ReceiptRepository();
+        // NotificationService לא נקרא ע"י אף אחד ישירות - הוא רק נרשם לאירועים בבנאי שלו,
+        // ומגיב להם באופן עצמאי לאורך כל ריצת התוכנית.
+        var notificationService = new NotificationService(eventNotifier, eventNotifier, personRepo, emailService);
 
-        string fakeUserSourceFile = "invoice.pdf";
-        if (!File.Exists(fakeUserSourceFile))
-        {
-            File.WriteAllText(fakeUserSourceFile, "Dummy PDF Content for Receipt Test.");
-        }
+        // -----------------------------------------------------------------
+        // 3. סימולציית תהליך מלא, כאילו מגיע מלחיצות על המסכים שתכננו
+        // -----------------------------------------------------------------
 
-        string uniqueReceiptNumber = "REC-" + DateTime.Now.Ticks.ToString().Substring(10);
-        ReceiptDetails newReceipt = new ReceiptDetails(uniqueReceiptNumber, 450.50m, DateTime.Now);
+        // [מסך כניסה] המנהלת מתחברת עם המייל והת.ז שלה
+        Event seedEvent = eventRepo.GetAll().First();
+        Person? managerAsPerson = personRepo.GetById(seedEvent.EventManagerId);
+        if (managerAsPerson == null) throw new InvalidOperationException("לא נמצא מנהל לאירוע הדמו.");
 
-        try
-        {
-            Console.WriteLine($"Uploading receipt {uniqueReceiptNumber} to 'Receipts' folder...");
+        Person? loggedInManager = userService.AuthenticateUser(managerAsPerson.Email, managerAsPerson.Id.ToString());
+        Console.WriteLine(loggedInManager != null
+            ? $"[מסך כניסה] התחברות הצליחה: {loggedInManager.Name} ({loggedInManager.Role})"
+            : "[מסך כניסה] התחברות נכשלה");
 
-            receiptRepo.AddReceipt(newReceipt, fakeUserSourceFile);
+        // [מסך הבית] הצגת כל האירועים שהמשתמש מארגן
+        Console.WriteLine("\n[מסך הבית] אירועים בהם המשתמש הוא המארגן:");
+        dashboardService.GetEventsAsOrganizer(managerAsPerson.Id).ToList()
+            .ForEach(e => Console.WriteLine($"  - {e.Name} (Id={e.Id})"));
 
-            Console.WriteLine("Receipt uploaded and object added to XML successfully!");
+        // [לחיצה על האירוע -> טאב משתתפים] הצגת כל המשתתפים, כולל סטטוס תשלום והגעה
+        Console.WriteLine("\n[מסך פרטי אירוע > משתתפים] רשימת משתתפים:");
+        List<Participant> participants = participantService.GetEventParticipants(seedEvent.Id).ToList();
+        participants.ForEach(p => Console.WriteLine(
+            $"  - {p.Name}: הגעה={p.IsAttending}, שולם={p.HasPaid}, תרומה={p.AmountContributed}₪"));
 
-            ReceiptDetails? retrievedReceipt = receiptRepo.GetById(uniqueReceiptNumber); if (retrievedReceipt != null)
+        Participant firstParticipant = participants[0];
+        Participant secondParticipant = participants[1];
+
+        // [מסך המשתתף] לחיצה על "אישור הגעה" - לשני המשתתפים, כדי ש"ערוצי ההתראות"
+        // שבחרו במעמד הרישום (NotificationPreferences) "יופעלו" בהמשך הסימולציה
+        Console.WriteLine($"\n[מסך משתתף - {firstParticipant.Name}] לוחצת על 'אישור הגעה'...");
+        participantService.ConfirmAttendance(firstParticipant.Id, true);
+        Console.WriteLine($"[מסך משתתף - {secondParticipant.Name}] לוחצת על 'אישור הגעה'...");
+        participantService.ConfirmAttendance(secondParticipant.Id, true);
+        // מאחורי הקלעים: כל קריאה הפעילה RaiseAttendanceConfirmed, שגרם ל-
+        // NotificationService לבדוק מי מהמנהלים ביקש לדעת על כך, ולשלוח לו מייל (לקובץ).
+
+        // [מסך מנהל > כספים] לוחצת על 'שלח תזכורת תשלום' - שירה עדיין לא שילמה בשלב הזה
+        Console.WriteLine("\n[מסך מנהל - כספים] לוחצת על 'שלח תזכורת תשלום'...");
+        financeService.SendPaymentReminders(seedEvent.Id, "בנק הפועלים, חשבון 123-456789");
+
+        // [מסך המשתתף] לחיצה על "שלם" - שירה מקבלת את התזכורת ומשלמת בתגובה
+        Console.WriteLine($"\n[מסך משתתף - {secondParticipant.Name}] משלמת {seedEvent.PricePerParticipant}₪...");
+        financeService.RegisterPayment(secondParticipant.Id, seedEvent.PricePerParticipant ?? 0);
+
+        // [מסך מנהל > כספים] בדיקת התקציב הדינמי לאחר התשלום
+        decimal netBudget = financeService.CalculateNetBudget(seedEvent.Id);
+        Console.WriteLine($"\n[מסך מנהל - כספים] תקציב נטו נוכחי לאחר התשלום: {netBudget}₪");
+
+        AccountSummaryResult summary = financeService.GetAccountSummary(seedEvent.Id);
+        Console.WriteLine($"[מסך מנהל - כספים] סיכום חשבון: הכנסות={summary.TotalIncome}₪, הוצאות={summary.TotalOutgoing}₪, מאזן={summary.NetBalance}₪");
+
+        // [מסך מנהל > סקרים] יצירת סקר חדש
+        Console.WriteLine("\n[מסך מנהל - סקרים] לוחצת על 'סקר חדש' ומגדירה שאלה...");
+        var newPoll = pollService.CreatePoll(
+            seedEvent.Id,
+            "סקר שעת התחלה",
+            "באיזו שעה נוח לכולם שהאירוע יתחיל?",
+            DateTime.Now.AddDays(3),
+            new List<PollQuestion>
             {
-                Console.WriteLine($"Retrieved Receipt from XML -> Number: {retrievedReceipt.ReceiptNumber}, Amount: {retrievedReceipt.Amount}₪");
+                new PollQuestion
+                {
+                    Id = 1,
+                    QuestionText = "מה שעת ההתחלה המועדפת?",
+                    Options = new List<string> { "18:00", "19:30", "21:00" }
+                }
+            });
+        // מאחורי הקלעים: CreatePoll הפעילה RaisePollCreated, וה-NotificationService שלח
+        // מייל לכל המשתתפים שביקשו לדעת על סקרים חדשים (participant2 בנתוני הדמו).
+
+        // [מסך משתתף > סקרים] המשתתפת מצביעה בסקר
+        Console.WriteLine($"[מסך משתתף - {secondParticipant.Name}] מצביעה '19:30' בסקר...");
+        pollService.CastVote(newPoll.Id, 1, secondParticipant.Id, "19:30");
+
+        // המשתתפת מתחרטת ומצביעה שוב - בודקים שזה מעדכן ולא משכפל
+        pollService.CastVote(newPoll.Id, 1, secondParticipant.Id, "21:00");
+
+        bool isOpen = pollService.IsPollOpen(newPoll.Id);
+        Console.WriteLine($"[מסך מנהל - סקרים] הסקר {(isOpen ? "עדיין פתוח" : "סגור")} להצבעה.");
+
+        var (poll, results) = pollService.GetPollWithResults(newPoll.Id);
+        Console.WriteLine($"[מסך מנהל - סקרים] תוצאות הסקר '{poll.Name}' באחוזים:");
+        foreach (var questionResult in results)
+        {
+            foreach (var optionPercent in questionResult.Value)
+            {
+                Console.WriteLine($"  - אופציה '{optionPercent.Key}': {optionPercent.Value}%");
             }
         }
-        catch (Exception ex)
+
+        // [מסך מנהל > פרטי אירוע] עריכת פרטי האירוע
+        Console.WriteLine("\n[מסך מנהל - פרטי אירוע] משנה את המיקום ושומרת...");
+        seedEvent.Location = "אולמי הגן הירוק, ראשון לציון";
+        dashboardService.UpdateEventDetails(seedEvent);
+        // מאחורי הקלעים: UpdateEventDetails הפעילה RaiseEventDetailsChanged, וה-
+        // NotificationService שלח מייל לכל המשתתפים שביקשו לדעת על שינוי באירוע
+        // (participant1 בנתוני הדמו).
+
+        // -----------------------------------------------------------------
+        // 4. אימות מקצה לקצה: גישה ישירה לקבצי ה-XML הפיזיים בדיסק, לבדוק
+        //    שהשינויים שביצעה שכבת הלוגיקה אכן חלחלו ונשמרו, בלי שה-BL בכלל
+        //    יודע שקובץ XML קיים.
+        // -----------------------------------------------------------------
+        Console.WriteLine("\n=== אימות ישיר על קובצי XML שעל הדיסק ===");
+        PrintFileSnippet(Path.Combine("XML", "Person.xml"));
+        PrintFileSnippet(Path.Combine("XML", "Event.xml"));
+        PrintFileSnippet(Path.Combine("XML", "Poll.xml"));
+
+        Console.WriteLine("\n=== תוכן תיבת הדואר היוצא (Emails/outbox.txt) ===");
+        PrintFileSnippet(Path.Combine("Emails", "outbox.txt"));
+
+        Console.WriteLine("\n=== סיום הריצה ===");
+    }
+
+    static void PrintFileSnippet(string path)
+    {
+        if (!File.Exists(path))
         {
-            Console.WriteLine($"Receipt upload failed: {ex.Message}");
+            Console.WriteLine($"({path} עוד לא נוצר)");
+            return;
         }
+
+        Console.WriteLine($"--- {path} ---");
+        Console.WriteLine(File.ReadAllText(path));
     }
 }

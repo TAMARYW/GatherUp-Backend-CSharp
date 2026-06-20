@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ArrayOfPerson xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Person Id="1">
+    <Name>תמר לוי</Name>
+    <Email>ty0556736234@gmail.com</Email>
+    <NotificationPreferences>
+      <Preference>AttendanceConfirmed</Preference>
+      <Preference>PaymentMade</Preference>
+      <Preference>PollAnswered</Preference>
+    </NotificationPreferences>
+  </Person>
+  <Person Id="2">
+    <Name>אביטל כהן</Name>
+    <Email>avital.gatherup@gmail.com</Email>
+    <NotificationPreferences />
+  </Person>
+  <Person Id="3">
+    <Name>ישראל ישראלי</Name>
+    <Email>israel.gatherup@gmail.com</Email>
+    <NotificationPreferences>
+      <Preference>EventDetailsChanged</Preference>
+    </NotificationPreferences>
+  </Person>
+  <Person Id="4">
+    <Name>שירה רפאל</Name>
+    <Email>shira.gatherup@gmail.com</Email>
+    <NotificationPreferences>
+      <Preference>PollCreated</Preference>
+    </NotificationPreferences>
+  </Person>
+  <Person Id="5">
+    <Name>תמר וייס</Name>
+    <Email>tamaryw234@gmail.com</Email>
+    <NotificationPreferences>
+      <Preference>AttendanceConfirmed</Preference>
+      <Preference>PaymentMade</Preference>
+      <Preference>PollAnswered</Preference>
+      <Preference>PollCreated</Preference>
+      <Preference>EventDetailsChanged</Preference>
+    </NotificationPreferences>
+  </Person>
+</ArrayOfPerson>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>התחברות · GatherUp</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="center-screen">
+  <div style="width:100%; max-width:420px;">
+
+    <div style="text-align:center; margin-bottom:22px;">
+      <div class="row" style="justify-content:center; gap:8px;">
+        <span class="dot" style="width:12px;height:12px;border-radius:50%;background:var(--accent);display:inline-block;"></span>
+        <h1 style="margin:0;">GatherUp</h1>
+      </div>
+      <p class="muted">ניהול מפגשים, סקרים והשתתפות — הכל במקום אחד</p>
+    </div>
+
+    <div class="card" style="position:relative;">
+      <h2 style="margin-bottom:4px;">כניסה למערכת</h2>
+      <p class="muted" style="margin-bottom:20px;">הזינו את כתובת המייל ואת מספר המזהה (ת.ז) שקיבלתם בהרשמה</p>
+
+      <div id="login-alert"></div>
+
+      <form id="login-form">
+        <div class="field">
+          <label for="email">כתובת אימייל</label>
+          <input type="email" id="email" required autocomplete="email" placeholder="name@example.com">
+        </div>
+        <div class="field">
+          <label for="idCard">מספר מזהה (ת.ז)</label>
+          <input type="text" id="idCard" required inputmode="numeric" placeholder="לדוגמה: 1">
+          <div class="hint">זהו המספר המזהה (Id) שקיבלתם כשנרשמתם למערכת.</div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%; margin-top:6px;" id="login-btn">
+          התחברות
+        </button>
+      </form>
+
+      <p style="text-align:center; margin-top:18px; margin-bottom:0;">
+        עדיין אין לכם חשבון? <a href="register.html">הרשמה למערכת</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+  // אם כבר מחוברים, אין סיבה להישאר בדף ההתחברות
+  if (GatherUp.isLoggedIn()) window.location.href = 'dashboard.html';
+
+  const prefill = localStorage.getItem('gatherup_prefill_email');
+  if (prefill) {
+    document.getElementById('email').value = prefill;
+    localStorage.removeItem('gatherup_prefill_email');
+  }
+
+  const form = document.getElementById('login-form');
+  const alertBox = document.getElementById('login-alert');
+  const btn = document.getElementById('login-btn');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    alertBox.innerHTML = '';
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> מתחבר...';
+
+    const email = document.getElementById('email').value.trim();
+    const idCard = document.getElementById('idCard').value.trim();
+
+    try {
+      const result = await GatherUp.apiFetch('/api/auth/login', {
+        method: 'POST',
+        body: { email, idCard },
+      });
+      GatherUp.saveToken(result.token);
+      window.location.href = 'dashboard.html';
+    } catch (err) {
+      alertBox.innerHTML = `<div class="alert alert-error">⚠️ ${GatherUp.escapeHtml(err.message)}</div>`;
+      btn.disabled = false;
+      btn.textContent = 'התחברות';
+    }
+  });
+</script>
+</body>
+</html>

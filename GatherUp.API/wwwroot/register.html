@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>הרשמה · GatherUp</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="center-screen">
+  <div style="width:100%;max-width:440px;">
+    <div style="text-align:center;margin-bottom:22px;">
+      <div class="row" style="justify-content:center;gap:8px;">
+        <span class="dot" style="width:12px;height:12px;border-radius:50%;background:var(--accent);display:inline-block;"></span>
+        <h1 style="margin:0;">GatherUp</h1>
+      </div>
+      <p class="muted">נרשמים פעם אחת — ויכולים לארגן אירועים, להתארח ולהשתתף</p>
+    </div>
+
+    <div class="card" id="form-card">
+      <h2 style="margin-bottom:4px;">הרשמה</h2>
+      <p class="muted" style="margin-bottom:20px;">לאחר ההרשמה תוכלו לפתוח אירועים, להתווסף כמשתתפים ועוד.</p>
+      <div id="register-alert"></div>
+      <form id="register-form">
+        <div class="field"><label for="reg-id">מספר ת.ז (Id) — בוחרים בעצמכם</label>
+          <input type="number" id="reg-id" required min="1" placeholder="לדוגמה: 12345"></div>
+        <div class="field"><label for="name">שם מלא</label>
+          <input type="text" id="name" required placeholder="לדוגמה: דנה כהן"></div>
+        <div class="field"><label for="email">כתובת אימייל (ייחודית)</label>
+          <input type="email" id="email" required placeholder="name@example.com"></div>
+        <button type="submit" class="btn btn-primary" style="width:100%;margin-top:6px;" id="register-btn">הרשמה</button>
+      </form>
+      <p style="text-align:center;margin-top:18px;margin-bottom:0;">יש לכם כבר חשבון? <a href="login.html">התחברות</a></p>
+    </div>
+
+    <div class="card" id="success-card" style="display:none;text-align:center;">
+      <div style="font-size:2.4rem;margin-bottom:6px;">🎫</div>
+      <h2>נרשמתם בהצלחה!</h2>
+      <p>נרשמת בהצלחה עם מספר ת.ז (Id):</p>
+      <div class="ticket-id" style="font-size:2.4rem;color:var(--primary-dark);margin-bottom:14px;" id="new-id"></div>
+      <p class="muted">שמרו את המספר — תצטרכו אותו בכל התחברות יחד עם האימייל.</p>
+      <a class="btn btn-primary" href="login.html" style="width:100%;margin-top:10px;">המשך להתחברות</a>
+    </div>
+  </div>
+</div>
+<script src="js/api.js"></script>
+<script>
+  if (GatherUp.isLoggedIn()) window.location.href = 'dashboard.html';
+
+  document.getElementById('register-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const alertBox = document.getElementById('register-alert');
+    const btn      = document.getElementById('register-btn');
+    alertBox.innerHTML = '';
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> נרשם/ת...';
+
+    try {
+      const result = await GatherUp.apiFetch('/api/person', {
+        method: 'POST',
+        body: {
+          id:    parseInt(document.getElementById('reg-id').value, 10),
+          name:  document.getElementById('name').value.trim(),
+          email: document.getElementById('email').value.trim(),
+        },
+      });
+      localStorage.setItem('gatherup_prefill_email', document.getElementById('email').value.trim());
+      document.getElementById('form-card').style.display = 'none';
+      document.getElementById('success-card').style.display = 'block';
+      document.getElementById('new-id').textContent = '#' + result.id;
+    } catch (err) {
+      alertBox.innerHTML = `<div class="alert alert-error">⚠️ ${GatherUp.escapeHtml(err.message)}</div>`;
+      btn.disabled = false;
+      btn.textContent = 'הרשמה';
+    }
+  });
+</script>
+</body>
+</html>

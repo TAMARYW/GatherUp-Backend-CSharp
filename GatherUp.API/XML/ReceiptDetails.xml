@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Receipts>
+  <Receipt Id="1875">
+    <Amount>600</Amount>
+    <Date>2026-06-28T00:00:00</Date>
+    <SavedFilePath>Receipts\1875.pdf</SavedFilePath>
+  </Receipt>
+  <Receipt Id="777">
+    <Amount>60</Amount>
+    <Date>2026-06-20T00:00:00</Date>
+    <SavedFilePath>Receipts\777.pdf</SavedFilePath>
+  </Receipt>
+</Receipts>

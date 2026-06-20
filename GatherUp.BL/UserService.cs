@@ -1,0 +1,114 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using GatherUp.Core.DO;
+using GatherUp.Core.Exceptions;
+using GatherUp.Core.Interfaces;
+
+namespace GatherUp.BL;
+
+public class UserService
+{
+    private readonly IRepository<Person> _personRepo;
+
+    public UserService(IRepository<Person> personRepo)
+    {
+        _personRepo = personRepo ?? throw new ArgumentNullException(nameof(personRepo));
+    }
+
+    /// <summary>
+    /// אימות כניסה: אימייל + ת.ז (Id) חייבים להתאים לאותו Person.
+    /// </summary>
+    public Person? AuthenticateUser(string email, string idCard)
+    {
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(idCard))
+            return null;
+
+        return _personRepo.GetAll()
+            .FirstOrDefault(p =>
+                string.Equals(p.Email, email, StringComparison.OrdinalIgnoreCase)
+                && p.Id.ToString() == idCard);
+    }
+
+    /// <summary>
+    /// הרשמה: יוצרת Person חדש. ה-Id נבחר ע"י המשתמש עצמו (לא מוקצה אוטומטית
+    /// ע"י המערכת), ולכן חובה לבדוק שגם ה-Id וגם האימייל ייחודיים.
+    /// </summary>
+    public void RegisterNewUser(Person newUser)
+    {
+        if (newUser == null) throw new ArgumentNullException(nameof(newUser));
+
+        if (newUser.Id <= 0)
+            throw new BusinessValidationException("מספר ת.ז (Id) חייב להיות מספר חיובי.");
+
+        bool idExists = _personRepo.GetAll().Any(p => p.Id == newUser.Id);
+        if (idExists)
+            throw new BusinessValidationException("מספר ת.ז (Id) זה כבר רשום במערכת.");
+
+        bool emailExists = _personRepo.GetAll()
+            .Any(p => string.Equals(p.Email, newUser.Email, StringComparison.OrdinalIgnoreCase));
+
+        if (emailExists)
+            throw new BusinessValidationException("משתמש עם כתובת אימייל זו כבר קיים במערכת.");
+
+        _personRepo.Add(newUser);
+    }
+
+    public Person? GetUserById(int id) => _personRepo.GetById(id);
+
+    /// <summary>
+    /// עדכון שם ואימייל — בודקת שהאימייל החדש לא תפוס ע"י Person אחר.
+    /// </summary>
+    public Person UpdateUserDetails(int id, string name, string email)
+    {
+        if (string.IsNullOrWhiteSpace(name))  throw new BusinessValidationException("שם המשתמש לא יכול להיות ריק.");
+        if (string.IsNullOrWhiteSpace(email)) throw new BusinessValidationException("כתובת האימייל לא יכולה להיות ריקה.");
+
+        Person? person = _personRepo.GetById(id);
+        if (person == null) throw new EntityNotFoundException("משתמש", id);
+
+        bool emailTakenByOther = _personRepo.GetAll()
+            .Any(p => p.Id != id && string.Equals(p.Email, email, StringComparison.OrdinalIgnoreCase));
+        if (emailTakenByOther)
+            throw new BusinessValidationException("כתובת האימייל הזו כבר תפוסה על ידי משתמש אחר.");
+
+        person.Name  = name;
+        person.Email = email;
+        _personRepo.Update(person);
+        return person;
+    }
+
+    /// <summary>
+    /// עדכון העדפות התראות — כעת על Person עצמו (לא על Participant נפרד).
+    /// </summary>
+    public void UpdateNotificationPreferences(int personId, IEnumerable<NotificationType> preferences)
+    {
+        if (preferences == null) throw new ArgumentNullException(nameof(preferences));
+
+        Person? person = _personRepo.GetById(personId);
+        if (person == null) throw new EntityNotFoundException("משתמש", personId);
+
+        person.NotificationPreferences = preferences.ToList();
+        _personRepo.Update(person);
+    }
+
+    /// <summary>
+    /// חיפוש Person לפי אימייל — לשימוש בהוספת משתתף לאירוע.
+    /// </summary>
+    public Person? FindByEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email)) return null;
+        return _personRepo.GetAll()
+            .FirstOrDefault(p => string.Equals(p.Email, email, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// חיפוש לפי שם — חלקי, לא תלוי רישיות — לפיצ'ר "חיפוש משתמש" בממשק.
+    /// </summary>
+    public IEnumerable<Person> SearchByName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return Enumerable.Empty<Person>();
+        return _personRepo.GetAll()
+            .Where(p => p.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
+    }
+}

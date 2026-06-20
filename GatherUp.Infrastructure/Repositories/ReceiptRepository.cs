@@ -2,11 +2,13 @@ using System;
 using System.IO;
 using System.Xml.Linq;
 using GatherUp.Core.DO;
+using GatherUp.Core.Exceptions;
 using GatherUp.Infrastructure.XML;
+using GatherUp.Core.Interfaces;
 
 namespace GatherUp.Infrastructure.Repositories;
 
-public class ReceiptRepository : XmlRepository<ReceiptDetails>
+public class ReceiptRepository : XmlRepository<ReceiptDetails>, IReceiptRepository
 {
     private readonly string _storageDirectory;
 
@@ -21,10 +23,11 @@ public class ReceiptRepository : XmlRepository<ReceiptDetails>
         if (string.IsNullOrWhiteSpace(currentSourceFilePath)) throw new ArgumentException("Source file path cannot be empty.");
 
         XDocument doc = XMLDocManager.LoadDocument(_filePath, "Receipts");
-        
+
         if (XMLDocManager.GetElementById(doc, "Receipt", receipt.ReceiptNumber) != null)
         {
-            throw new InvalidOperationException($"Receipt with number {receipt.ReceiptNumber} already exists.");
+            // תוקן בשלב 4: InvalidOperationException הוחלף בחריג עסקי מותאם.
+            throw new BusinessValidationException($"קבלה עם מספר {receipt.ReceiptNumber} כבר קיימת במערכת.");
         }
 
         if (!Directory.Exists(_storageDirectory)) Directory.CreateDirectory(_storageDirectory);
@@ -35,13 +38,14 @@ public class ReceiptRepository : XmlRepository<ReceiptDetails>
 
         if (File.Exists(destinationPath))
         {
-            throw new InvalidOperationException($"File for receipt {receipt.ReceiptNumber} already exists.");
+            // תוקן בשלב 4: InvalidOperationException הוחלף בחריג עסקי מותאם.
+            throw new BusinessValidationException($"קובץ עבור קבלה {receipt.ReceiptNumber} כבר קיים במערכת.");
         }
 
         File.Copy(currentSourceFilePath, destinationPath, overwrite: false);
 
         XElement newReceiptElement = new XElement("Receipt",
-            new XAttribute("Id", receipt.ReceiptNumber), 
+            new XAttribute("Id", receipt.ReceiptNumber),
             new XElement("Amount", receipt.Amount),
             new XElement("Date", receipt.Date.ToString("yyyy-MM-ddTHH:mm:ss")),
             new XElement("SavedFilePath", destinationPath)
@@ -64,12 +68,16 @@ public class ReceiptRepository : XmlRepository<ReceiptDetails>
         string number = element.Attribute("Id")?.Value ?? receiptNumber;
         decimal amount = decimal.Parse(element.Element("Amount")?.Value ?? "0");
         DateTime date = DateTime.Parse(element.Element("Date")?.Value ?? DateTime.Now.ToString());
-        
-        return new ReceiptDetails(number, amount, date); 
+
+        return new ReceiptDetails(number, amount, date);
     }
 
     public override void Add(ReceiptDetails entity) => throw new NotSupportedException("Use AddReceipt(receipt, path) instead.");
-    public override void Update(ReceiptDetails entity) => throw new InvalidOperationException("Receipts cannot be modified.");
-    public override void Delete(int id) => throw new InvalidOperationException("Receipts cannot be deleted.");
+
+    // תוקן בשלב 4: InvalidOperationException הוחלף ב-ReceiptLockedException -
+    // זהו בדיוק "חריג עבור ניסיון עריכה או מחיקה של קבלה פיננסית נעולה" שמבוקש
+    // בהוראות שלב ד', ומתורגם ע"י ה-Middleware הגלובלי לסטטוס 400.
+    public override void Update(ReceiptDetails entity) => throw new ReceiptLockedException("לא ניתן לערוך קבלה פיננסית קיימת - קבלות נעולות לאחר יצירתן.");
+    public override void Delete(int id) => throw new ReceiptLockedException("לא ניתן למחוק קבלה פיננסית - קבלות נעולות לאחר יצירתן.");
     public override ReceiptDetails? GetById(int id) => throw new NotSupportedException("Use GetById(string) instead.");
 }

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>האירועים שלי · GatherUp</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app-nav-slot"></div>
+<div class="page">
+  <div class="page-header">
+    <div>
+      <span class="eyebrow" id="greeting">שלום!</span>
+      <h1>האירועים שלי</h1>
+    </div>
+    <!-- כל משתמש מחובר יכול לפתוח אירוע חדש -->
+    <button class="btn btn-primary" id="new-event-btn">+ אירוע חדש</button>
+  </div>
+
+  <div id="dashboard-alert"></div>
+
+  <div class="card" id="new-event-card" style="display:none;margin-bottom:24px;">
+    <h3>יצירת אירוע חדש</h3>
+    <form id="new-event-form">
+      <div class="form-row">
+        <div class="field"><label>שם האירוע</label>
+          <input type="text" id="ev-name" required placeholder="לדוגמה: ארוחת חברים"></div>
+        <div class="field"><label>תאריך</label>
+          <input type="date" id="ev-date"></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>מיקום</label>
+          <input type="text" id="ev-location" placeholder="תל אביב"></div>
+        <div class="field"><label>מחיר למשתתף (₪)</label>
+          <input type="number" id="ev-price" min="0" step="0.5"></div>
+      </div>
+      <div class="field" style="max-width:320px;">
+        <label>מספר ת.ז (Id) של בעל האירוע</label>
+        <div class="row">
+          <input type="number" id="ev-host" required min="1" style="flex:1;">
+          <button type="button" class="btn btn-ghost btn-small" id="lookup-host-btn">בדיקה</button>
+        </div>
+        <div class="hint" id="host-lookup-result"></div>
+      </div>
+      <div class="row" style="margin-top:10px;">
+        <button type="submit" class="btn btn-primary" id="create-event-submit">יצירת האירוע</button>
+        <button type="button" class="btn btn-ghost" id="cancel-new-event">ביטול</button>
+      </div>
+    </form>
+  </div>
+
+  <div id="events-sections"></div>
+</div>
+<script src="js/api.js"></script>
+<script>
+const user = GatherUp.requireAuth();
+GatherUp.renderNav('dashboard');
+if (user) document.getElementById('greeting').textContent = `שלום, ${user.name || 'משתמש'}`;
+
+document.getElementById('new-event-btn').addEventListener('click', () => {
+  document.getElementById('new-event-card').style.display = 'block';
+  document.getElementById('new-event-btn').style.display  = 'none';
+});
+document.getElementById('cancel-new-event').addEventListener('click', () => {
+  document.getElementById('new-event-card').style.display = 'none';
+  document.getElementById('new-event-btn').style.display  = '';
+});
+
+document.getElementById('lookup-host-btn').addEventListener('click', async () => {
+  const id = document.getElementById('ev-host').value;
+  const res = document.getElementById('host-lookup-result');
+  if (!id) return;
+  res.textContent = 'בודק...';
+  try {
+    const p = await GatherUp.apiFetch('/api/person/' + id);
+    res.innerHTML = `✅ נמצא: <strong>${GatherUp.escapeHtml(p.name)}</strong> (${GatherUp.escapeHtml(p.email)})`;
+  } catch (err) { res.innerHTML = `⚠️ ${GatherUp.escapeHtml(err.message)}`; }
+});
+
+document.getElementById('new-event-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('create-event-submit');
+  btn.disabled = true;
+  try {
+    const created = await GatherUp.apiFetch('/api/events', { method: 'POST', body: {
+      name:               document.getElementById('ev-name').value.trim(),
+      eventHostId:        parseInt(document.getElementById('ev-host').value, 10),
+      date:               document.getElementById('ev-date').value || null,
+      location:           document.getElementById('ev-location').value.trim() || null,
+      pricePerParticipant: document.getElementById('ev-price').value ? parseFloat(document.getElementById('ev-price').value) : null,
+    }});
+    GatherUp.showToast('האירוע נוצר בהצלחה!');
+    window.location.href = 'event.html?id=' + created.id;
+  } catch (err) { GatherUp.showToast(err.message, 'error'); btn.disabled = false; }
+});
+
+function eventCard(ev, badge) {
+  return `<a class="ticket" href="event.html?id=${ev.id}" style="text-decoration:none;color:inherit;">
+    <div class="ticket-stub">🎫</div>
+    <div class="ticket-body">
+      <h3>${GatherUp.escapeHtml(ev.name)}</h3>
+      <div class="ticket-meta">
+        <span>📅 ${GatherUp.formatDate(ev.date)}</span>
+        <span>📍 ${GatherUp.escapeHtml(ev.location || 'ללא מיקום')}</span>
+        ${ev.pricePerParticipant != null ? `<span>₪${ev.pricePerParticipant}</span>` : ''}
+      </div>
+    </div>
+    <span class="badge badge-neutral">${badge}</span>
+    <span class="ticket-id">#${ev.id}</span>
+  </a>`;
+}
+
+async function load() {
+  const container = document.getElementById('events-sections');
+  container.innerHTML = '<div class="empty-state"><span class="spinner"></span></div>';
+
+  const [org, own, par] = await Promise.allSettled([
+    GatherUp.apiFetch('/api/events/organizer'),
+    GatherUp.apiFetch('/api/events/owner'),
+    GatherUp.apiFetch('/api/events/participant'),
+  ]).then(rs => rs.map(r => r.status === 'fulfilled' ? r.value : []));
+
+  let html = '';
+  if (org?.length)  html += section('🛠️ אירועים שאני מארגן/ת', org,  'אתם המארגנים');
+  if (own?.length)  html += section('🎩 אירועים על שמי',        own,  'האירוע על שמכם');
+  if (par?.length)  html += section('🙋 אירועים שאני משתתף/ת',  par,  'אתם משתתפים');
+
+  if (!html) html = `<div class="empty-state"><div class="icon">🪑</div>
+    <p>אין עדיין אירועים משויכים לחשבון שלכם.</p>
+    <p>לחצו על "+ אירוע חדש" כדי להתחיל, או בקשו שיוסיפו אתכם לאירוע.</p></div>`;
+
+  container.innerHTML = html;
+}
+
+function section(title, events, badge) {
+  return `<div class="section-title"><h2>${title}</h2></div>
+    <div class="stack" style="margin-bottom:34px;">${events.map(ev => eventCard(ev, badge)).join('')}</div>`;
+}
+
+load().catch(err => {
+  document.getElementById('dashboard-alert').innerHTML =
+    `<div class="alert alert-error">⚠️ ${GatherUp.escapeHtml(err.message)}</div>`;
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ArrayOfPoll xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Poll Id="1">
+    <Name>סקר פרטים התחלתיים לאירוע</Name>
+    <Description>נא להצביע על התאריך והמיקום המועדפים עליכם</Description>
+    <ClosingDate>2026-06-25T13:53:17.7307108+03:00</ClosingDate>
+    <Questions>
+      <PollQuestion Id="1">
+        <QuestionText>מהו המיקום המועדף עליכם?</QuestionText>
+        <Options>
+          <Option>תל אביב</Option>
+          <Option>ירושלים</Option>
+          <Option>חיפה</Option>
+        </Options>
+        <Votes />
+      </PollQuestion>
+      <PollQuestion Id="2">
+        <QuestionText>באיזה תאריך נוח לכם?</QuestionText>
+        <Options>
+          <Option>15/06/2026</Option>
+          <Option>22/06/2026</Option>
+        </Options>
+        <Votes />
+      </PollQuestion>
+    </Questions>
+  </Poll>
+  <Poll Id="2">
+    <Name>סקר המשך - כיבוד ואוכל</Name>
+    <Description>בחירת סגנון הקייטרינג לאירוע</Description>
+    <ClosingDate>2026-07-02T13:53:17.744039+03:00</ClosingDate>
+    <Questions>
+      <PollQuestion Id="1">
+        <QuestionText>איזה סוג אוכל תרצו?</QuestionText>
+        <Options>
+          <Option>בשרי</Option>
+          <Option>חלבי</Option>
+          <Option>טבעוני</Option>
+        </Options>
+        <Votes />
+      </PollQuestion>
+    </Questions>
+  </Poll>
+  <Poll Id="3">
+    <Name>סקר שעת התחלה</Name>
+    <Description>באיזו שעה נוח לכולם שהאירוע יתחיל?</Description>
+    <ClosingDate>2026-06-21T13:53:17.9236338+03:00</ClosingDate>
+    <Questions>
+      <PollQuestion Id="1">
+        <QuestionText>מה שעת ההתחלה המועדפת?</QuestionText>
+        <Options>
+          <Option>18:00</Option>
+          <Option>19:30</Option>
+          <Option>21:00</Option>
+        </Options>
+        <Votes />
+      </PollQuestion>
+    </Questions>
+  </Poll>
+  <Poll Id="4">
+    <Name>סקר שעת התחלה</Name>
+    <Description>באיזו שעה נוח לכולם שהאירוע יתחיל?</Description>
+    <ClosingDate>2026-06-21T14:01:27.8196238+03:00</ClosingDate>
+    <Questions>
+      <PollQuestion Id="1">
+        <QuestionText>מה שעת ההתחלה המועדפת?</QuestionText>
+        <Options>
+          <Option>18:00</Option>
+          <Option>19:30</Option>
+          <Option>21:00</Option>
+        </Options>
+        <Votes>
+          <Vote ParticipantId="4" ChosenOption="21:00" />
+        </Votes>
+      </PollQuestion>
+    </Questions>
+  </Poll>
+  <Poll Id="5">
+    <Name>תפריט</Name>
+    <Description>בארוע הזה כולן מגיעות רעבות!!! 
+אין דיאטה אין כלום
+כדי שכולנו נהיה מרוצות מהאוכל בואו נחשוב ונסקור יחדווה</Description>
+    <ClosingDate>2026-06-19T19:45:00</ClosingDate>
+    <Questions>
+      <PollQuestion Id="1">
+        <QuestionText>חלבי או פרווה?</QuestionText>
+        <Options>
+          <Option>חלבי</Option>
+          <Option>פרווה</Option>
+        </Options>
+        <Votes>
+          <Vote ParticipantId="8" ChosenOption="חלבי" />
+          <Vote ParticipantId="10" ChosenOption="פרווה" />
+        </Votes>
+      </PollQuestion>
+      <PollQuestion Id="2">
+        <QuestionText>כמה סלטים להזמין</QuestionText>
+        <Options>
+          <Option>1</Option>
+          <Option>2</Option>
+          <Option>3</Option>
+          <Option>4</Option>
+        </Options>
+        <Votes>
+          <Vote ParticipantId="8" ChosenOption="3" />
+          <Vote ParticipantId="10" ChosenOption="2" />
+        </Votes>
+      </PollQuestion>
+      <PollQuestion Id="3">
+        <QuestionText>האם להזמין קינוח?</QuestionText>
+        <Options>
+          <Option>כן</Option>
+          <Option>לא</Option>
+          <Option>אולי</Option>
+        </Options>
+        <Votes>
+          <Vote ParticipantId="8" ChosenOption="אולי" />
+          <Vote ParticipantId="10" ChosenOption="אולי" />
+        </Votes>
+      </PollQuestion>
+    </Questions>
+  </Poll>
+  <Poll Id="6">
+    <Name>נסיון</Name>
+    <ClosingDate>2026-06-19T20:04:00</ClosingDate>
+    <Questions>
+      <PollQuestion Id="1">
+        <QuestionText>מה קורה?</QuestionText>
+        <Options>
+          <Option>הכל טוב</Option>
+          <Option>הכל זוועה</Option>
+        </Options>
+        <Votes />
+      </PollQuestion>
+    </Questions>
+  </Poll>
+  <Poll Id="7">
+    <Name>תפריט</Name>
+    <Description>כל אחד יגיד את דעתו ונכבד.</Description>
+    <ClosingDate>2026-06-22T00:44:00</ClosingDate>
+    <Questions>
+      <PollQuestion Id="1">
+        <QuestionText>חלבי או בשרי?</QuestionText>
+        <Options>
+          <Option>חלבי</Option>
+          <Option>בשרי</Option>
+          <Option>פרווה</Option>
+          <Option>לא אכפת לי</Option>
+        </Options>
+        <Votes>
+          <Vote ParticipantId="1" ChosenOption="בשרי" />
+        </Votes>
+      </PollQuestion>
+      <PollQuestion Id="2">
+        <QuestionText>כמה לשלם?</QuestionText>
+        <Options>
+          <Option>יקר- מסעדה</Option>
+          <Option>נורמלי - בית קפה</Option>
+          <Option>זול- בית</Option>
+        </Options>
+        <Votes>
+          <Vote ParticipantId="1" ChosenOption="נורמלי - בית קפה" />
+        </Votes>
+      </PollQuestion>
+    </Questions>
+  </Poll>
+  <Poll Id="8">
+    <Name>מה שלומכם?</Name>
+    <Description>איך המרגש?</Description>
+    <ClosingDate>2026-06-21T00:50:00</ClosingDate>
+    <Questions>
+      <PollQuestion Id="1">
+        <QuestionText>555</QuestionText>
+        <Options>
+          <Option>סבבה</Option>
+          <Option>לא סבבה</Option>
+        </Options>
+        <Votes>
+          <Vote ParticipantId="5" ChosenOption="סבבה" />
+        </Votes>
+      </PollQuestion>
+    </Questions>
+  </Poll>
+</ArrayOfPoll>

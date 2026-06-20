@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>הפרופיל שלי · GatherUp</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app-nav-slot"></div>
+<div class="page" style="max-width:600px;">
+  <div class="page-header">
+    <div><span class="eyebrow">החשבון שלי</span><h1>הפרופיל שלי</h1></div>
+  </div>
+  <div id="profile-alert"></div>
+  <div class="card" id="profile-card"><div class="empty-state"><span class="spinner"></span></div></div>
+
+  <!-- כל Person (לא רק משתתף) יכול לנהל העדפות -->
+  <div class="card" id="prefs-card" style="margin-top:20px;display:none;">
+    <h3>העדפות התראות במייל</h3>
+    <p class="muted">בחרו על אילו עדכונים תרצו לקבל מייל.</p>
+    <div id="prefs-list" class="stack"></div>
+    <button class="btn btn-secondary" id="save-prefs-btn" style="margin-top:10px;">שמירת העדפות</button>
+  </div>
+</div>
+<script src="js/api.js"></script>
+<script>
+const currentUser = GatherUp.requireAuth();
+GatherUp.renderNav('profile');
+
+let personData = null;
+
+async function loadProfile() {
+  personData = await GatherUp.apiFetch('/api/person/' + currentUser.id);
+  renderCard();
+  // כל אדם מנהל העדפות
+  document.getElementById('prefs-card').style.display = 'block';
+  renderPrefs();
+}
+
+function renderCard() {
+  document.getElementById('profile-card').innerHTML = `
+    <div class="row between" style="margin-bottom:18px;">
+      <h2 style="margin:0;">${GatherUp.escapeHtml(personData.name)}</h2>
+    </div>
+    <form id="edit-profile-form">
+      <div class="field"><label>שם מלא</label>
+        <input type="text" id="edit-p-name" value="${GatherUp.escapeHtml(personData.name)}" required></div>
+      <div class="field"><label>כתובת אימייל</label>
+        <input type="email" id="edit-p-email" value="${GatherUp.escapeHtml(personData.email)}" required></div>
+      <div class="row"><button type="submit" class="btn btn-primary">שמירת שינויים</button></div>
+    </form>
+    <p class="muted" style="margin-top:14px;margin-bottom:0;">
+      מספר ת.ז (Id) במערכת: <strong>#${personData.id}</strong> — תצטרכו אותו בכל התחברות.
+    </p>`;
+
+  document.getElementById('edit-profile-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+      const updated = await GatherUp.apiFetch('/api/person/' + personData.id, {
+        method: 'PUT',
+        body: {
+          name:  document.getElementById('edit-p-name').value.trim(),
+          email: document.getElementById('edit-p-email').value.trim(),
+        },
+      });
+      Object.assign(personData, updated);
+      GatherUp.showToast('הפרטים נשמרו בהצלחה');
+      renderCard();
+    } catch (err) { GatherUp.showToast(err.message, 'error'); }
+  });
+}
+
+function renderPrefs() {
+  const current = new Set(personData.notificationPreferences || []);
+  document.getElementById('prefs-list').innerHTML =
+    [0, 1, 2, 3, 4].map(t => `
+      <label class="checkbox-row">
+        <input type="checkbox" class="pref-checkbox" value="${t}" ${current.has(t) ? 'checked' : ''}>
+        ${GatherUp.escapeHtml(GatherUp.notifLabel(t))}
+      </label>`).join('');
+}
+
+document.getElementById('save-prefs-btn').addEventListener('click', async () => {
+  const selected = Array.from(document.querySelectorAll('.pref-checkbox:checked'))
+    .map(cb => parseInt(cb.value, 10));
+  try {
+    // endpoint חדש: /api/person/{id}/notification-preferences
+    await GatherUp.apiFetch('/api/person/' + personData.id + '/notification-preferences', {
+      method: 'PUT',
+      body: { preferences: selected },
+    });
+    GatherUp.showToast('ההעדפות נשמרו');
+  } catch (err) { GatherUp.showToast(err.message, 'error'); }
+});
+
+loadProfile().catch(err => {
+  document.getElementById('profile-alert').innerHTML =
+    `<div class="alert alert-error">⚠️ ${GatherUp.escapeHtml(err.message)}</div>`;
+});
+</script>
+</body>
+</html>

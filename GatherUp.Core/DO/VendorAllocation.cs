@@ -19,7 +19,15 @@ public class VendorAllocation : IEntity
     [XmlAttribute("HasReceipt")]
     public bool HasReceipt { get; set; }
 
-    [XmlIgnore]
+    /// <summary>
+    /// תוקן בשלב 4: היה מסומן [XmlIgnore] - כלומר הקבלות שנוספו לספק נעלמו בכל
+    /// פעם שה-VendorAllocation נקרא מחדש מה-XML (כל קריאה ל-GetAll/GetById
+    /// קוראת מהדיסק מחדש). בדיוק אותו באג שתואר ותוקן בעבר ב-PollQuestion.Votes.
+    /// כעת, בעזרת התיקון המקביל ב-ReceiptDetails (בנאי ריק + Xml attributes),
+    /// הרשימה נשמרת ונטענת כרגיל.
+    /// </summary>
+    [XmlArray("Receipts")]
+    [XmlArrayItem("Receipt")]
     public List<ReceiptDetails> Receipts { get; set; }
 
     [SetsRequiredMembers]
