@@ -12,9 +12,9 @@ public class ReceiptRepository : XmlRepository<ReceiptDetails>, IReceiptReposito
 {
     private readonly string _storageDirectory;
 
-    public ReceiptRepository() : base(Path.Combine("XML", "ReceiptDetails.xml"), useSerializer: false)
+    public ReceiptRepository() : base(Path.Combine("..", "XML", "ReceiptDetails.xml"), useSerializer: false)
     {
-        _storageDirectory = "Receipts";
+        _storageDirectory = Path.Combine("..", "Receipts");
     }
 
     public void AddReceipt(ReceiptDetails receipt, string currentSourceFilePath)
@@ -26,7 +26,6 @@ public class ReceiptRepository : XmlRepository<ReceiptDetails>, IReceiptReposito
 
         if (XMLDocManager.GetElementById(doc, "Receipt", receipt.ReceiptNumber) != null)
         {
-            // תוקן בשלב 4: InvalidOperationException הוחלף בחריג עסקי מותאם.
             throw new BusinessValidationException($"קבלה עם מספר {receipt.ReceiptNumber} כבר קיימת במערכת.");
         }
 
@@ -38,7 +37,6 @@ public class ReceiptRepository : XmlRepository<ReceiptDetails>, IReceiptReposito
 
         if (File.Exists(destinationPath))
         {
-            // תוקן בשלב 4: InvalidOperationException הוחלף בחריג עסקי מותאם.
             throw new BusinessValidationException($"קובץ עבור קבלה {receipt.ReceiptNumber} כבר קיים במערכת.");
         }
 
@@ -74,9 +72,6 @@ public class ReceiptRepository : XmlRepository<ReceiptDetails>, IReceiptReposito
 
     public override void Add(ReceiptDetails entity) => throw new NotSupportedException("Use AddReceipt(receipt, path) instead.");
 
-    // תוקן בשלב 4: InvalidOperationException הוחלף ב-ReceiptLockedException -
-    // זהו בדיוק "חריג עבור ניסיון עריכה או מחיקה של קבלה פיננסית נעולה" שמבוקש
-    // בהוראות שלב ד', ומתורגם ע"י ה-Middleware הגלובלי לסטטוס 400.
     public override void Update(ReceiptDetails entity) => throw new ReceiptLockedException("לא ניתן לערוך קבלה פיננסית קיימת - קבלות נעולות לאחר יצירתן.");
     public override void Delete(int id) => throw new ReceiptLockedException("לא ניתן למחוק קבלה פיננסית - קבלות נעולות לאחר יצירתן.");
     public override ReceiptDetails? GetById(int id) => throw new NotSupportedException("Use GetById(string) instead.");

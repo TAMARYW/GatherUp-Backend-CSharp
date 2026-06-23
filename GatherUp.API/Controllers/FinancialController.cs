@@ -15,12 +15,12 @@ namespace GatherUp.API.Controllers;
 [Route("api/[controller]")]
 public class FinancialController : ControllerBase
 {
-    private readonly FinanceService        _financeService;
+    private readonly FinanceService _financeService;
     private readonly EventDashboardService _dashboardService;
 
     public FinancialController(FinanceService financeService, EventDashboardService dashboardService)
     {
-        _financeService   = financeService;
+        _financeService = financeService;
         _dashboardService = dashboardService;
     }
 
@@ -50,10 +50,6 @@ public class FinancialController : ControllerBase
         return Ok(_financeService.GetFlattenedReceiptsReport(eventId));
     }
 
-    /// <summary>
-    /// הוספת חוב לספק — אם vendorId עדיין לא קיים, זו בפועל רישום ספק חדש
-    /// (עם ה-Id/שם/סכום שסופקו); אם הוא כבר קיים, הסכום פשוט מצטרף לחוב הקיים.
-    /// </summary>
     [Authorize]
     [HttpPost("event/{eventId}/vendor/{vendorId}/debt")]
     public IActionResult AddVendorDebt([FromRoute] int eventId, [FromRoute] int vendorId, [FromBody] AddVendorDebtRequest request)
@@ -65,10 +61,6 @@ public class FinancialController : ControllerBase
         return Ok(vendor);
     }
 
-    /// <summary>
-    /// רישום תשלום — המנהל מאשר תשלום בשם משתתף.
-    /// Route: POST /api/financial/event/{eventId}/person/{personId}/payment
-    /// </summary>
     [Authorize]
     [HttpPost("event/{eventId}/person/{personId}/payment")]
     public IActionResult RegisterPayment(
@@ -93,16 +85,13 @@ public class FinancialController : ControllerBase
         return NoContent();
     }
 
-    /// <summary>
-    /// העלאת קבלה — [Authorize] רגיל; בדיקת בעלות אירוע נקודתית דרך vendorId.
-    /// </summary>
     [Authorize]
     [HttpPost("vendor/{vendorId}/receipt")]
     public async Task<IActionResult> UploadReceipt(
         [FromRoute] int vendorId,
-        [FromForm]  string receiptNumber,
-        [FromForm]  decimal amount,
-        [FromForm]  DateTime date,
+        [FromForm] string receiptNumber,
+        [FromForm] decimal amount,
+        [FromForm] DateTime date,
         IFormFile file)
     {
         if (file == null || file.Length == 0)

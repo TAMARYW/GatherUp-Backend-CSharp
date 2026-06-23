@@ -5,10 +5,6 @@ using GatherUp.Core.Interfaces;
 
 namespace GatherUp.Infrastructure.Notifications;
 
-/// <summary>
-/// מימוש IEmailService ששולח מייל אמיתי דרך שרת SMTP (System.Net.Mail, מובנה ב-.NET,
-/// אין צורך בחבילת NuGet נוספת). מחליף את FileEmailService - סוגר את אתגר "שרת המיילים".
-/// </summary>
 public class SmtpEmailService : IEmailService
 {
     private readonly SmtpSettings _settings;

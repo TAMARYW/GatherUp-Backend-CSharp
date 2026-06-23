@@ -10,13 +10,13 @@ namespace GatherUp.API.Controllers;
 [Route("api/[controller]")]
 public class ParticipantsController : ControllerBase
 {
-    private readonly ParticipantService    _participantService;
+    private readonly ParticipantService _participantService;
     private readonly EventDashboardService _dashboardService;
 
     public ParticipantsController(ParticipantService participantService, EventDashboardService dashboardService)
     {
         _participantService = participantService;
-        _dashboardService   = dashboardService;
+        _dashboardService = dashboardService;
     }
 
     private IActionResult? EnsureCallerManagesEvent(int eventId)
@@ -32,9 +32,6 @@ public class ParticipantsController : ControllerBase
     public IActionResult GetByEvent([FromRoute] int eventId) =>
         Ok(_participantService.GetEventParticipants(eventId));
 
-    /// <summary>
-    /// הוספת משתתף לפי אימייל — האדם חייב להיות קיים ב-Person.xml.
-    /// </summary>
     [Authorize]
     [HttpPost("event/{eventId}")]
     public IActionResult Add([FromRoute] int eventId, [FromBody] AddParticipantRequest request)
@@ -46,9 +43,6 @@ public class ParticipantsController : ControllerBase
         return StatusCode(201, result);
     }
 
-    /// <summary>
-    /// אישור הגעה — האדם מאשר על עצמו בלבד (personId נלקח מהטוקן).
-    /// </summary>
     [Authorize]
     [HttpPut("event/{eventId}/attendance")]
     public IActionResult ConfirmAttendance([FromRoute] int eventId, [FromBody] AttendanceRequest request)

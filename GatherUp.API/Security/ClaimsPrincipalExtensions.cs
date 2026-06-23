@@ -3,12 +3,6 @@ using System.Security.Claims;
 
 namespace GatherUp.API.Security;
 
-/// <summary>
-/// מתודת הרחבה ל-ClaimsPrincipal (ה-User בתוך כל קונטרולר) - מחלצת את מזהה
-/// המשתמש המחובר מתוך הטוקן. נדרשת בכל מקום שבו אסור להסתמך על מזהה שמגיע
-/// מהלקוח (כמו participantId בגוף הבקשה), אלא חובה לקחת אותו מהטוקן החתום -
-/// כדי שמשתמש לא יוכל "להתחזות" למשתמש אחר.
-/// </summary>
 public static class ClaimsPrincipalExtensions
 {
     public static int GetUserId(this ClaimsPrincipal user)

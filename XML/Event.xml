@@ -25,7 +25,12 @@
     <PricePerParticipant>200</PricePerParticipant>
     <EventManagerId>329148753</EventManagerId>
     <EventHostId>123456789</EventHostId>
-    <Participants />
+    <Participants>
+      <Participant PersonId="330704123" HasPaid="true">
+        <IsAttending xsi:nil="true" />
+        <AmountContributed>200</AmountContributed>
+      </Participant>
+    </Participants>
     <VendorIds />
     <PollIds />
   </Event>

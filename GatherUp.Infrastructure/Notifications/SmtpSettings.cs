@@ -1,10 +1,4 @@
 namespace GatherUp.Infrastructure.Notifications;
-
-/// <summary>
-/// הגדרות שרת ה-SMTP לשליחת מיילים אמיתיים. הערכים בפועל מגיעים מ-appsettings.json
-/// (פרק "Smtp"), באותו הרוח של JwtSettings - הפרטים הרגישים (App Password) לא
-/// יושבים בקובץ הזה עצמו, אלא מוזרקים בזמן ריצה ממקור מאובטח (User Secrets / משתני סביבה).
-/// </summary>
 public class SmtpSettings
 {
     public required string Host { get; set; }

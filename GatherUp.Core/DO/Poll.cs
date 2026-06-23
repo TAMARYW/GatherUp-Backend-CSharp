@@ -5,7 +5,6 @@ using System.Xml.Serialization;
 using GatherUp.Core.Interfaces;
 
 namespace GatherUp.Core.DO;
-
 public class Poll : IEntity
 {
     [XmlAttribute("Id")]
@@ -17,10 +16,6 @@ public class Poll : IEntity
     [XmlElement("Description")]
     public string? Description { get; set; }
 
-    /// <summary>
-    /// תאריך סגירת הסקר להצבעה. נחשף בלבד דרך PollService.IsPollOpen - לא חוסם
-    /// הצבעה אוטומטית, ההחלטה איך להתייחס לסקר סגור נשארת בידי המסך.
-    /// </summary>
     [XmlElement("ClosingDate")]
     public DateTime? ClosingDate { get; set; }
 

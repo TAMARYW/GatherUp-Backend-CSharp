@@ -7,26 +7,22 @@ using GatherUp.Core.Interfaces;
 
 namespace GatherUp.BL;
 
-/// <summary>
-/// ניהול משתתפים — הוספה לפי אימייל, אישור הגעה, הפצת הזמנות.
-/// המשתתפים מוכלים בתוך Event.Participants ונשמרים כחלק מה-Event.
-/// </summary>
 public class ParticipantService
 {
     private readonly IRepository<Person> _personRepo;
-    private readonly IRepository<Event>  _eventRepo;
-    private readonly IEmailService       _emailService;
-    private readonly IEventPublisher     _eventPublisher;
+    private readonly IRepository<Event> _eventRepo;
+    private readonly IEmailService _emailService;
+    private readonly IEventPublisher _eventPublisher;
 
     public ParticipantService(
         IRepository<Person> personRepo,
-        IRepository<Event>  eventRepo,
-        IEmailService       emailService,
-        IEventPublisher     eventPublisher)
+        IRepository<Event> eventRepo,
+        IEmailService emailService,
+        IEventPublisher eventPublisher)
     {
-        _personRepo     = personRepo     ?? throw new ArgumentNullException(nameof(personRepo));
-        _eventRepo      = eventRepo      ?? throw new ArgumentNullException(nameof(eventRepo));
-        _emailService   = emailService   ?? throw new ArgumentNullException(nameof(emailService));
+        _personRepo = personRepo ?? throw new ArgumentNullException(nameof(personRepo));
+        _eventRepo = eventRepo ?? throw new ArgumentNullException(nameof(eventRepo));
+        _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
         _eventPublisher = eventPublisher ?? throw new ArgumentNullException(nameof(eventPublisher));
     }
 
@@ -37,10 +33,6 @@ public class ParticipantService
         return ev;
     }
 
-    /// <summary>
-    /// הוספת משתתף לאירוע לפי אימייל.
-    /// האדם חייב להיות קיים ב-Person.xml; אי אפשר להזמין מישהו שלא נרשם למערכת.
-    /// </summary>
     public ParticipantWithDetails AddParticipant(int eventId, string email)
     {
         Event ev = GetExistingEvent(eventId);
@@ -62,19 +54,12 @@ public class ParticipantService
         return ToDetails(participant, person);
     }
 
-    /// <summary>
-    /// כל המשתתפים של אירוע — מוחזרים עם פרטי הזהות מ-Person.xml.
-    /// </summary>
     public IEnumerable<ParticipantWithDetails> GetEventParticipants(int eventId)
     {
         Event ev = GetExistingEvent(eventId);
         return ev.Participants.Select(p => ToDetails(p, _personRepo.GetById(p.PersonId)));
     }
 
-    /// <summary>
-    /// אישור / דחיית הגעה — האדם מאשר על עצמו (personId == User.GetUserId()).
-    /// המנהל אינו מאשר הגעה של אחרים.
-    /// </summary>
     public void ConfirmAttendance(int eventId, int personId, bool isAttending)
     {
         Event ev = GetExistingEvent(eventId);
@@ -88,17 +73,11 @@ public class ParticipantService
         _eventPublisher.RaiseAttendanceConfirmed(personId, isAttending, ev.Id, ev.EventManagerId);
     }
 
-    /// <summary>
-    /// משתתפים שטרם אישרו הגעה — לתצוגה ולשליחת הזמנות המוניות.
-    /// </summary>
     public IEnumerable<ParticipantWithDetails> GetUnconfirmedParticipants(int eventId)
     {
         return GetEventParticipants(eventId).Where(p => p.IsAttending != true);
     }
 
-    /// <summary>
-    /// הפצת הזמנות המוניות: שולחת מייל לכל מי שטרם אישר הגעה.
-    /// </summary>
     public void SendMassInvitations(int eventId, string confirmationFormLink)
     {
         Event ev = GetExistingEvent(eventId);
@@ -116,7 +95,7 @@ public class ParticipantService
 
     private static ParticipantWithDetails ToDetails(Participant p, Person? person) =>
         new(p.PersonId,
-            person?.Name  ?? "לא ידוע",
+            person?.Name ?? "לא ידוע",
             person?.Email ?? "",
             p.IsAttending,
             p.HasPaid,

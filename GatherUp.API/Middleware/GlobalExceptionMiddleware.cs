@@ -6,14 +6,6 @@ using Microsoft.AspNetCore.Http;
 
 namespace GatherUp.API.Middleware;
 
-/// <summary>
-/// המידלוור המרכזי לטיפול בשגיאות. עוטף את כל הצינור בבלוק try-catch גלובלי
-/// אחד, כדי שלא יהיה צורך בבלוקי try-catch ידניים בתוך הקונטרולרים. מתפוס את
-/// שלושת החריגים העסקיים שהוגדרו ב-GatherUp.Core.Exceptions ומתרגם אותם
-/// לסטטוס HTTP תקני, ולכל חריג אחר (כשל דיסק, באג לא צפוי וכו') מחזיר 500.
-/// חובה להיות הראשון בצינור (ב-Program.cs) כדי שיוכל לעטוף גם את כל שאר
-/// המידלוורים שאחריו.
-/// </summary>
 public class GlobalExceptionMiddleware
 {
     private readonly RequestDelegate _next;
@@ -43,7 +35,6 @@ public class GlobalExceptionMiddleware
         }
         catch (Exception ex)
         {
-            // שגיאת שרת לא צפויה - באג, או תקלת דיסק/קריאת XML.
             await WriteErrorResponse(context, 500, "INTERNAL_SERVER_ERROR", "אירעה שגיאת שרת קריטית. פרטים: " + ex.Message);
         }
     }

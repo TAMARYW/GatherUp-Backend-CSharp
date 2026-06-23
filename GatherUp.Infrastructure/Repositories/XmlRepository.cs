@@ -63,14 +63,6 @@ public class XmlRepository<T> : IRepository<T> where T : class
         return XMLSerializer.ReadFromXml<List<T>>(_filePath);
     }
 
-    /// <summary>
-    /// תוקן: הגרסה המקורית לא עשתה כלום כשהשימוש בסריאלייזר מופעל (לא קראה מהדיסק,
-    /// לא כתבה לדיסק) - כל עדכון מה-BL היה "נבלע" בלי שגיאה ובלי השפעה. כעת קוראים
-    /// את הרשימה המלאה מהדיסק, מאתרים את האיבר לפי Id (FirstOrDefault, ללא לולאה ידנית),
-    /// מחליפים אותו ברשימה, וכותבים את הרשימה המעודכנת בחזרה לדיסק.
-    /// תוקן בשלב 4: KeyNotFoundException הוחלף ב-EntityNotFoundException, כדי
-    /// שה-Middleware הגלובלי ב-API יתרגם אותו אוטומטית לסטטוס 404.
-    /// </summary>
     public virtual void Update(T entity)
     {
         if (entity == null) throw new ArgumentNullException(nameof(entity));
@@ -88,13 +80,6 @@ public class XmlRepository<T> : IRepository<T> where T : class
         }
     }
 
-    /// <summary>
-    /// תוקן באותו אופן כמו Update - היה no-op, כעת קורא, מסנן את האיבר עם ה-Id המבוקש
-    /// (Where, ללא לולאה ידנית) וכותב את התוצאה בחזרה.
-    /// תוקן בשלב 4: נוסף בדיקת קיום מפורשת לפני המחיקה (ולא רק סינון שקט) - כדי
-    /// שמחיקת מזהה שלא קיים תזרוק EntityNotFoundException ותתורגם לסטטוס 404,
-    /// ולא "תיבלע" בשקט כהצלחה מדומה.
-    /// </summary>
     public virtual void Delete(int id)
     {
         if (!_useSerializer) throw new InvalidOperationException("Deletion is not allowed.");

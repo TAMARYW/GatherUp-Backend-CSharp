@@ -16,9 +16,6 @@ public class UserService
         _personRepo = personRepo ?? throw new ArgumentNullException(nameof(personRepo));
     }
 
-    /// <summary>
-    /// אימות כניסה: אימייל + ת.ז (Id) חייבים להתאים לאותו Person.
-    /// </summary>
     public Person? AuthenticateUser(string email, string idCard)
     {
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(idCard))
@@ -30,10 +27,6 @@ public class UserService
                 && p.Id.ToString() == idCard);
     }
 
-    /// <summary>
-    /// הרשמה: יוצרת Person חדש. ה-Id נבחר ע"י המשתמש עצמו (לא מוקצה אוטומטית
-    /// ע"י המערכת), ולכן חובה לבדוק שגם ה-Id וגם האימייל ייחודיים.
-    /// </summary>
     public void RegisterNewUser(Person newUser)
     {
         if (newUser == null) throw new ArgumentNullException(nameof(newUser));
@@ -56,12 +49,9 @@ public class UserService
 
     public Person? GetUserById(int id) => _personRepo.GetById(id);
 
-    /// <summary>
-    /// עדכון שם ואימייל — בודקת שהאימייל החדש לא תפוס ע"י Person אחר.
-    /// </summary>
     public Person UpdateUserDetails(int id, string name, string email)
     {
-        if (string.IsNullOrWhiteSpace(name))  throw new BusinessValidationException("שם המשתמש לא יכול להיות ריק.");
+        if (string.IsNullOrWhiteSpace(name)) throw new BusinessValidationException("שם המשתמש לא יכול להיות ריק.");
         if (string.IsNullOrWhiteSpace(email)) throw new BusinessValidationException("כתובת האימייל לא יכולה להיות ריקה.");
 
         Person? person = _personRepo.GetById(id);
@@ -72,15 +62,12 @@ public class UserService
         if (emailTakenByOther)
             throw new BusinessValidationException("כתובת האימייל הזו כבר תפוסה על ידי משתמש אחר.");
 
-        person.Name  = name;
+        person.Name = name;
         person.Email = email;
         _personRepo.Update(person);
         return person;
     }
 
-    /// <summary>
-    /// עדכון העדפות התראות — כעת על Person עצמו (לא על Participant נפרד).
-    /// </summary>
     public void UpdateNotificationPreferences(int personId, IEnumerable<NotificationType> preferences)
     {
         if (preferences == null) throw new ArgumentNullException(nameof(preferences));
@@ -92,9 +79,6 @@ public class UserService
         _personRepo.Update(person);
     }
 
-    /// <summary>
-    /// חיפוש Person לפי אימייל — לשימוש בהוספת משתתף לאירוע.
-    /// </summary>
     public Person? FindByEmail(string email)
     {
         if (string.IsNullOrWhiteSpace(email)) return null;
@@ -102,9 +86,6 @@ public class UserService
             .FirstOrDefault(p => string.Equals(p.Email, email, StringComparison.OrdinalIgnoreCase));
     }
 
-    /// <summary>
-    /// חיפוש לפי שם — חלקי, לא תלוי רישיות — לפיצ'ר "חיפוש משתמש" בממשק.
-    /// </summary>
     public IEnumerable<Person> SearchByName(string name)
     {
         if (string.IsNullOrWhiteSpace(name)) return Enumerable.Empty<Person>();

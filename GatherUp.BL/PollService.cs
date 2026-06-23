@@ -7,10 +7,6 @@ using GatherUp.Core.Interfaces;
 
 namespace GatherUp.BL;
 
-/// <summary>
-/// מחלקת ניהול קבלת ההחלטות והסקרים - הדינמיות של השאלונים המקדימים והסקרים השוטפים
-/// לאורך חיי הפקת המפגש.
-/// </summary>
 public class PollService
 {
     private readonly IRepository<Poll> _pollRepo;
@@ -82,12 +78,6 @@ public class PollService
         return !poll.ClosingDate.HasValue || poll.ClosingDate.Value > DateTime.Now;
     }
 
-    /// <summary>
-    /// הגשת הצבעה: ההצבעה נרשמת מחדש בכל מקרה (גם אם המשתתף בחר שוב באותה
-    /// אפשרות). אירוע ההתראה (PollAnswered) מופעל - ובכך נשלח מייל למנהל -
-    /// רק אם הבחירה החדשה שונה מההצבעה הקודמת של אותו משתתף. אם המשתתף
-    /// פשוט מצביע מחדש לאותה אפשרות, אין שום שינוי מהותי שראוי לדווח עליו.
-    /// </summary>
     public void CastVote(int pollId, int questionId, int participantId, string chosenOption)
     {
         Poll poll = GetExistingPoll(pollId);

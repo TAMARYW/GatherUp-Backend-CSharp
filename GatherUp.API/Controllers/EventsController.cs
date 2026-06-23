@@ -26,9 +26,6 @@ public class EventsController : ControllerBase
     public IActionResult GetAsOwner() =>
         Ok(_dashboardService.GetEventsAsOwner(User.GetUserId()));
 
-    /// <summary>
-    /// אירועים שהמשתמש משתתף בהם — כעת לפי PersonId (לא אימייל).
-    /// </summary>
     [Authorize]
     [HttpGet("participant")]
     public IActionResult GetAsParticipant() =>
@@ -43,31 +40,24 @@ public class EventsController : ControllerBase
         return Ok(ev);
     }
 
-    /// <summary>
-    /// יצירת אירוע — כל Person מחובר יכול ליצור אירוע;
-    /// אין יותר [Authorize(Roles="Manager")].
-    /// </summary>
     [Authorize]
     [HttpPost]
     public IActionResult Create([FromBody] CreateEventRequest request)
     {
         var newEvent = new Event
         {
-            Name                  = request.Name,
-            EventManagerId        = User.GetUserId(),
-            EventHostId           = request.EventHostId,
-            Date                  = request.Date,
-            Location              = request.Location,
-            PricePerParticipant   = request.PricePerParticipant
+            Name = request.Name,
+            EventManagerId = User.GetUserId(),
+            EventHostId = request.EventHostId,
+            Date = request.Date,
+            Location = request.Location,
+            PricePerParticipant = request.PricePerParticipant
         };
 
         _dashboardService.CreateEvent(newEvent);
         return StatusCode(201, newEvent);
     }
 
-    /// <summary>
-    /// עריכה — הגנת הקשר: רק EventManagerId == אתה.
-    /// </summary>
     [Authorize]
     [HttpPut("{id}")]
     public IActionResult Update([FromRoute] int id, [FromBody] UpdateEventRequest request)
@@ -76,9 +66,9 @@ public class EventsController : ControllerBase
         if (ev == null) return NotFound(new { error = "האירוע לא נמצא." });
         if (ev.EventManagerId != User.GetUserId()) return Forbid();
 
-        ev.Name               = request.Name;
-        ev.Date               = request.Date;
-        ev.Location           = request.Location;
+        ev.Name = request.Name;
+        ev.Date = request.Date;
+        ev.Location = request.Location;
         ev.PricePerParticipant = request.PricePerParticipant;
 
         _dashboardService.UpdateEventDetails(ev);

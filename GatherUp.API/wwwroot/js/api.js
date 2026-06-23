@@ -1,11 +1,7 @@
-/* ============================================================
-   GatherUp — שכבת תקשורת משותפת עם ה-Web API
-   ============================================================ */
 
 const GatherUp = (() => {
   const TOKEN_KEY = 'gatherup_token';
 
-  // NotificationType: 0-4
   const NOTIF_LABELS = {
     0: 'אישור הגעה של משתתף',
     1: 'תשלום שהתקבל',
@@ -15,9 +11,9 @@ const GatherUp = (() => {
   };
   function notifLabel(type) { return NOTIF_LABELS[type] ?? String(type); }
 
-  function saveToken(token)  { localStorage.setItem(TOKEN_KEY, token); }
-  function getToken()        { return localStorage.getItem(TOKEN_KEY); }
-  function clearToken()      { localStorage.removeItem(TOKEN_KEY); }
+  function saveToken(token) { localStorage.setItem(TOKEN_KEY, token); }
+  function getToken() { return localStorage.getItem(TOKEN_KEY); }
+  function clearToken() { localStorage.removeItem(TOKEN_KEY); }
 
   function base64UrlDecode(str) {
     str = str.replace(/-/g, '+').replace(/_/g, '/');
@@ -36,13 +32,13 @@ const GatherUp = (() => {
 
   const CLAIM_URIS = {
     nameIdentifier: 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier',
-    name:           'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name',
-    email:          'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress',
+    name: 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name',
+    email: 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress',
   };
   const SHORT_FALLBACKS = {
     nameIdentifier: ['nameid', 'sub'],
-    name:           ['unique_name', 'name'],
-    email:          ['email'],
+    name: ['unique_name', 'name'],
+    email: ['email'],
   };
   function getClaim(payload, key) {
     if (!payload) return undefined;
@@ -55,8 +51,8 @@ const GatherUp = (() => {
   function getCurrentUser() {
     const payload = decodeToken();
     if (!payload) return null;
-    const id    = getClaim(payload, 'nameIdentifier');
-    const name  = getClaim(payload, 'name');
+    const id = getClaim(payload, 'nameIdentifier');
+    const name = getClaim(payload, 'name');
     const email = getClaim(payload, 'email');
     if (id === undefined) return null;
     return { id: parseInt(id, 10), name, email };
@@ -71,14 +67,8 @@ const GatherUp = (() => {
 
   function logout() {
     clearToken();
-    // replace (לא href) - לא משאיר את עמוד ה"לפני התנתקות" בהיסטוריית הקדימה
     window.location.replace('login.html');
   }
-
-  // הגנה מפני כפתור "אחורה" בדפדפן אחרי התנתקות: בדפדפנים מסוימים (Firefox/
-  // Safari בעיקר) חזרה אחורה משחזרת עמוד מוגן ישירות מ-bfcache בלי להריץ
-  // מחדש את ה-JS (ולכן בלי requireAuth) - ה-pageshow עם event.persisted=true
-  // מזהה בדיוק את המקרה הזה, וכופה רענון מלא כדי שה-requireAuth ירוץ מחדש.
   window.addEventListener('pageshow', (event) => {
     if (event.persisted) {
       window.location.reload();
@@ -117,12 +107,12 @@ const GatherUp = (() => {
     if (!response.ok) {
       const message = (data && data.error) ? data.error
         : response.status === 401 ? 'יש להתחבר מחדש.'
-        : response.status === 403 ? 'אין לך הרשאה לבצע פעולה זו.'
-        : response.status === 404 ? 'הפריט המבוקש לא נמצא.'
-        : 'אירעה שגיאה (סטטוס ' + response.status + ').';
+          : response.status === 403 ? 'אין לך הרשאה לבצע פעולה זו.'
+            : response.status === 404 ? 'הפריט המבוקש לא נמצא.'
+              : 'אירעה שגיאה (סטטוס ' + response.status + ').';
       const err = new Error(message);
       err.status = response.status;
-      err.data   = data;
+      err.data = data;
       throw err;
     }
     return data;
@@ -164,7 +154,7 @@ const GatherUp = (() => {
     const user = getCurrentUser();
     const links = [
       { key: 'dashboard', href: 'dashboard.html', label: 'האירועים שלי' },
-      { key: 'profile',   href: 'profile.html',   label: 'הפרופיל שלי' },
+      { key: 'profile', href: 'profile.html', label: 'הפרופיל שלי' },
     ];
     slot.innerHTML = `
       <div class="app-nav">

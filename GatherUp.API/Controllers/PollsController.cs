@@ -37,10 +37,6 @@ public class PollsController : ControllerBase
         return Ok(_pollService.GetEventPolls(eventId));
     }
 
-    /// <summary>
-    /// יצירת סקר - הגנת הקשר נקודתית: רק מנהל האירוע הספציפי הזה יכול ליצור
-    /// בו סקרים.
-    /// </summary>
     [Authorize]
     [HttpPost("event/{eventId}")]
     public IActionResult Create([FromRoute] int eventId, [FromBody] CreatePollRequest request)
@@ -61,9 +57,6 @@ public class PollsController : ControllerBase
         return StatusCode(201, poll);
     }
 
-    /// <summary>
-    /// בדיקה כללית - האם הסקר עדיין פתוח להצבעה. פתוח לציבור, אין בה מידע רגיש.
-    /// </summary>
     [AllowAnonymous]
     [HttpGet("{pollId}/is-open")]
     public IActionResult IsOpen([FromRoute] int pollId)
@@ -71,10 +64,6 @@ public class PollsController : ControllerBase
         return Ok(new { isOpen = _pollService.IsPollOpen(pollId) });
     }
 
-    /// <summary>
-    /// הצבעה - מזהה המשתתף נלקח מהטוקן (לא מהבקשה), כדי שאי אפשר להצביע
-    /// "בשם" משתתף אחר.
-    /// </summary>
     [Authorize]
     [HttpPost("{pollId}/questions/{questionId}/vote")]
     public IActionResult Vote([FromRoute] int pollId, [FromRoute] int questionId, [FromBody] VoteRequest request)

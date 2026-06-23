@@ -4,11 +4,6 @@ using System.Xml.Serialization;
 
 namespace GatherUp.Core.DO;
 
-/// <summary>
-/// הצבעה בודדת של משתתף לשאלה. נדרש כמחלקה נפרדת (ולא Dictionary&lt;int,string&gt;) כי
-/// XmlSerializer לא יודע לסריאלז Dictionary כלל - זו הסיבה שב-PollQuestion המקורי השדה
-/// היה מסומן [XmlIgnore], מה שגרם לכל הצבעה להיעלם בכל פעם שקוראים מחדש מה-XML.
-/// </summary>
 public class ParticipantVote
 {
     [XmlAttribute("ParticipantId")]
@@ -30,11 +25,6 @@ public class PollQuestion
     [XmlArrayItem("Option")]
     public List<string> Options { get; set; }
 
-    /// <summary>
-    /// תוקן: היה Dictionary&lt;int,string&gt; מסומן [XmlIgnore] - כלומר ההצבעות מעולם לא
-    /// נשמרו בפועל בדיסק, ונעלמו בכל קריאה חדשה. כעת רשימה רגילה של ParticipantVote,
-    /// שמסתדרת מצוין עם XmlSerializer.
-    /// </summary>
     [XmlArray("Votes")]
     [XmlArrayItem("Vote")]
     public List<ParticipantVote> Votes { get; set; }

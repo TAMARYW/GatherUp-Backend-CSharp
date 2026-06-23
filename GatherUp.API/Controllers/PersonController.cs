@@ -15,9 +15,6 @@ public class PersonController : ControllerBase
 
     public PersonController(UserService userService) => _userService = userService;
 
-    /// <summary>
-    /// הרשמה — יוצר Person חדש; כולם נרשמים אותו דבר (אין Role בהרשמה).
-    /// </summary>
     [AllowAnonymous]
     [HttpPost]
     public IActionResult Register([FromBody] RegisterPersonRequest request)
@@ -36,9 +33,6 @@ public class PersonController : ControllerBase
         return Ok(person);
     }
 
-    /// <summary>
-    /// עריכת פרטים אישיים — כל אחד יכול לערוך רק את עצמו.
-    /// </summary>
     [Authorize]
     [HttpPut("{id}")]
     public IActionResult Update([FromRoute] int id, [FromBody] UpdatePersonRequest request)
@@ -49,9 +43,6 @@ public class PersonController : ControllerBase
         return Ok(updated);
     }
 
-    /// <summary>
-    /// עדכון העדפות מייל — כל אחד מנהל את שלו.
-    /// </summary>
     [Authorize]
     [HttpPut("{id}/notification-preferences")]
     public IActionResult UpdateNotificationPreferences(
@@ -64,9 +55,6 @@ public class PersonController : ControllerBase
         return NoContent();
     }
 
-    /// <summary>
-    /// חיפוש לפי שם חלקי — לסיוע במציאת מזמינים / בעלי אירוע.
-    /// </summary>
     [Authorize]
     [HttpGet("search")]
     public IActionResult Search([FromQuery] string name)

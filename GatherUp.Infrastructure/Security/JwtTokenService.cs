@@ -8,10 +8,6 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace GatherUp.Infrastructure.Security;
 
-/// <summary>
-/// מנפיק JWT. Claims: Id, Name, Email בלבד.
-/// אין Role גלובלי — הרשאות נגזרות מהקשר האירוע בלבד.
-/// </summary>
 public class JwtTokenService : ITokenService
 {
     private readonly JwtSettings _settings;
@@ -30,14 +26,14 @@ public class JwtTokenService : ITokenService
             new Claim(ClaimTypes.Email,          person.Email),
         };
 
-        var key         = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.SecretKey));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.SecretKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
-            issuer:             _settings.Issuer,
-            audience:           _settings.Audience,
-            claims:             claims,
-            expires:            DateTime.UtcNow.AddMinutes(_settings.ExpiryMinutes),
+            issuer: _settings.Issuer,
+            audience: _settings.Audience,
+            claims: claims,
+            expires: DateTime.UtcNow.AddMinutes(_settings.ExpiryMinutes),
             signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);

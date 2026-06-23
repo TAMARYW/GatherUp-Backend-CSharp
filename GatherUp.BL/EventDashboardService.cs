@@ -9,17 +9,17 @@ namespace GatherUp.BL;
 
 public class EventDashboardService
 {
-    private readonly IRepository<Event>  _eventRepo;
+    private readonly IRepository<Event> _eventRepo;
     private readonly IRepository<Person> _personRepo;
-    private readonly IEventPublisher     _eventPublisher;
+    private readonly IEventPublisher _eventPublisher;
 
     public EventDashboardService(
-        IRepository<Event>  eventRepo,
+        IRepository<Event> eventRepo,
         IRepository<Person> personRepo,
-        IEventPublisher     eventPublisher)
+        IEventPublisher eventPublisher)
     {
-        _eventRepo      = eventRepo      ?? throw new ArgumentNullException(nameof(eventRepo));
-        _personRepo     = personRepo     ?? throw new ArgumentNullException(nameof(personRepo));
+        _eventRepo = eventRepo ?? throw new ArgumentNullException(nameof(eventRepo));
+        _personRepo = personRepo ?? throw new ArgumentNullException(nameof(personRepo));
         _eventPublisher = eventPublisher ?? throw new ArgumentNullException(nameof(eventPublisher));
     }
 
@@ -29,19 +29,12 @@ public class EventDashboardService
     public IEnumerable<Event> GetEventsAsOwner(int hostId) =>
         _eventRepo.GetAll().Where(e => e.EventHostId == hostId);
 
-    /// <summary>
-    /// אירועים שהמשתמש משתתף בהם — חיפוש לפי PersonId ישירות ב-Event.Participants.
-    /// אין יותר צורך בחיפוש לפי אימייל.
-    /// </summary>
     public IEnumerable<Event> GetEventsAsParticipant(int personId) =>
         _eventRepo.GetAll()
             .Where(e => e.Participants.Any(p => p.PersonId == personId));
 
     public Event? GetEventDetails(int eventId) => _eventRepo.GetById(eventId);
 
-    /// <summary>
-    /// יצירת אירוע — מאמתת שה-EventHostId קיים ב-Person.xml.
-    /// </summary>
     public void CreateEvent(Event newEvent)
     {
         if (newEvent == null) throw new ArgumentNullException(nameof(newEvent));

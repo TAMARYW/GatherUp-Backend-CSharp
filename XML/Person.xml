@@ -16,4 +16,9 @@
     <Email>TY0556736234@GMAIL.COM</Email>
     <NotificationPreferences />
   </Person>
+  <Person Id="330704123">
+    <Name>יעל קוקיס</Name>
+    <Email>yeal@gmail.com</Email>
+    <NotificationPreferences />
+  </Person>
 </ArrayOfPerson>

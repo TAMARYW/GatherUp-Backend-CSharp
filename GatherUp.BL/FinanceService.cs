@@ -14,39 +14,30 @@ public record AccountSummaryResult(
     decimal TotalOutgoing,
     decimal NetBalance);
 
-/// <summary>
-/// שורה בדוח הקבלות. record עם Properties אמיתיים - ולא ValueTuple - כי
-/// System.Text.Json לא מסריאליז שדות ציבוריים (Fields) בברירת מחדל, וטאפלים
-/// חושפים את הערכים שלהם כשדות (Item1/Item2) ולא כ-Properties. שימוש בטאפל
-/// כאן היה גורם לכל שורה להגיע ללקוח כאובייקט ריק {}.
-/// </summary>
 public record ReceiptReportEntry(string ReceiptNumber, decimal Amount);
 
-/// <summary>
-/// הנדסה פיננסית — תשלומים, חובות ספקים, דוחות.
-/// </summary>
 public class FinanceService
 {
     private readonly IRepository<VendorAllocation> _vendorRepo;
-    private readonly IRepository<Person>           _personRepo;
-    private readonly IRepository<Event>            _eventRepo;
-    private readonly IReceiptRepository            _receiptRepo;
-    private readonly IEmailService                 _emailService;
-    private readonly IEventPublisher               _eventPublisher;
+    private readonly IRepository<Person> _personRepo;
+    private readonly IRepository<Event> _eventRepo;
+    private readonly IReceiptRepository _receiptRepo;
+    private readonly IEmailService _emailService;
+    private readonly IEventPublisher _eventPublisher;
 
     public FinanceService(
         IRepository<VendorAllocation> vendorRepo,
-        IRepository<Person>           personRepo,
-        IRepository<Event>            eventRepo,
-        IReceiptRepository            receiptRepo,
-        IEmailService                 emailService,
-        IEventPublisher               eventPublisher)
+        IRepository<Person> personRepo,
+        IRepository<Event> eventRepo,
+        IReceiptRepository receiptRepo,
+        IEmailService emailService,
+        IEventPublisher eventPublisher)
     {
-        _vendorRepo     = vendorRepo     ?? throw new ArgumentNullException(nameof(vendorRepo));
-        _personRepo     = personRepo     ?? throw new ArgumentNullException(nameof(personRepo));
-        _eventRepo      = eventRepo      ?? throw new ArgumentNullException(nameof(eventRepo));
-        _receiptRepo    = receiptRepo    ?? throw new ArgumentNullException(nameof(receiptRepo));
-        _emailService   = emailService   ?? throw new ArgumentNullException(nameof(emailService));
+        _vendorRepo = vendorRepo ?? throw new ArgumentNullException(nameof(vendorRepo));
+        _personRepo = personRepo ?? throw new ArgumentNullException(nameof(personRepo));
+        _eventRepo = eventRepo ?? throw new ArgumentNullException(nameof(eventRepo));
+        _receiptRepo = receiptRepo ?? throw new ArgumentNullException(nameof(receiptRepo));
+        _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
         _eventPublisher = eventPublisher ?? throw new ArgumentNullException(nameof(eventPublisher));
     }
 
@@ -68,11 +59,12 @@ public class FinanceService
     {
         Event ev = GetExistingEvent(eventId);
         return ev.Participants
-            .Select(p => {
+            .Select(p =>
+            {
                 Person? person = _personRepo.GetById(p.PersonId);
                 return new ParticipantWithDetails(
                     p.PersonId,
-                    person?.Name  ?? "לא ידוע",
+                    person?.Name ?? "לא ידוע",
                     person?.Email ?? "",
                     p.IsAttending,
                     p.HasPaid,
@@ -86,9 +78,6 @@ public class FinanceService
         return _vendorRepo.GetAll().Where(v => ev.VendorIds.Contains(v.Id));
     }
 
-    /// <summary>
-    /// רישום תשלום — המנהל מאשר תשלום בשם משתתף.
-    /// </summary>
     public void RegisterPayment(int eventId, int personId, decimal amountPaid)
     {
         Event ev = GetExistingEvent(eventId);
@@ -103,12 +92,6 @@ public class FinanceService
         _eventPublisher.RaisePaymentMade(personId, amountPaid, ev.Id, ev.EventManagerId);
     }
 
-    /// <summary>
-    /// הוספת חוב לספק — אם הספק (לפי Id) עדיין לא קיים, זו פעולת "רישום ספק
-    /// חדש": יוצרת VendorAllocation עם ה-Id/שם/סכום שהמנהל סיפק, ומשייכת
-    /// אותו לאירוע (VendorIds). אם הספק כבר קיים, פשוט מוסיפה את הסכום
-    /// ל-AmountOwed הקיים שלו, בלי ליצור רשומה כפולה.
-    /// </summary>
     public VendorAllocation RegisterOrAddVendorDebt(int eventId, int vendorId, string name, decimal amount)
     {
         if (string.IsNullOrWhiteSpace(name))
@@ -139,10 +122,6 @@ public class FinanceService
         return vendor;
     }
 
-    /// <summary>
-    /// הפצת תזכורות תשלום — לכל משתתף שטרם שילם, עם תוכן חופשי שהמנהל קובע
-    /// (לא רק פרטי חשבון בנק - יכול להיות כל הודעה).
-    /// </summary>
     public void SendPaymentReminders(int eventId, string message)
     {
         Event ev = GetExistingEvent(eventId);
@@ -158,9 +137,6 @@ public class FinanceService
                 $"שלום {person.Name}, {message}"));
     }
 
-    /// <summary>
-    /// חישוב תקציב נטו בשרשור LINQ אחד.
-    /// </summary>
     public decimal CalculateNetBudget(int eventId)
     {
         Event ev = GetExistingEvent(eventId);
@@ -173,9 +149,6 @@ public class FinanceService
                 .Sum(v => v.AmountOwed);
     }
 
-    /// <summary>
-    /// שיטוח קבלות כל הספקים (SelectMany), ממוין יורד לפי תאריך.
-    /// </summary>
     public IEnumerable<ReceiptReportEntry> GetFlattenedReceiptsReport(int eventId)
     {
         return GetEventVendors(eventId)
@@ -184,9 +157,6 @@ public class FinanceService
             .Select(r => new ReceiptReportEntry(r.ReceiptNumber, r.Amount));
     }
 
-    /// <summary>
-    /// סיכום כספי מלא — משתתפים ששילמו, ספקים, מצב נטו.
-    /// </summary>
     public AccountSummaryResult GetAccountSummary(int eventId)
     {
         IEnumerable<ParticipantWithDetails> paidParticipants =
@@ -199,13 +169,6 @@ public class FinanceService
         return new AccountSummaryResult(paidParticipants, totalIncome, vendors, totalOutgoing, totalIncome - totalOutgoing);
     }
 
-    /// <summary>
-    /// העלאת קבלה דיגיטלית לספק - מהווה הוכחה שחלק (או כל) החוב שולם בפועל,
-    /// ולכן מפחיתה את הסכום מ-AmountOwed של הספק (מה שמתבטא אוטומטית גם
-    /// בחישוב הנטו וההכנסות/הוצאות, כי הם תמיד נקראים בזמן אמת מתוך
-    /// VendorAllocation.AmountOwed). חוסמת קבלה שגדולה מהחוב שנותר, כדי
-    /// שהחוב לא ירד מתחת לאפס.
-    /// </summary>
     public ReceiptDetails UploadVendorReceipt(int vendorId, string receiptNumber, decimal amount, DateTime date, string sourceFilePath)
     {
         if (string.IsNullOrWhiteSpace(receiptNumber))
