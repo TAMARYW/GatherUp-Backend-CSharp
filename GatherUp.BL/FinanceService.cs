@@ -15,6 +15,14 @@ public record AccountSummaryResult(
     decimal NetBalance);
 
 /// <summary>
+/// שורה בדוח הקבלות. record עם Properties אמיתיים - ולא ValueTuple - כי
+/// System.Text.Json לא מסריאליז שדות ציבוריים (Fields) בברירת מחדל, וטאפלים
+/// חושפים את הערכים שלהם כשדות (Item1/Item2) ולא כ-Properties. שימוש בטאפל
+/// כאן היה גורם לכל שורה להגיע ללקוח כאובייקט ריק {}.
+/// </summary>
+public record ReceiptReportEntry(string ReceiptNumber, decimal Amount);
+
+/// <summary>
 /// הנדסה פיננסית — תשלומים, חובות ספקים, דוחות.
 /// </summary>
 public class FinanceService
@@ -168,12 +176,12 @@ public class FinanceService
     /// <summary>
     /// שיטוח קבלות כל הספקים (SelectMany), ממוין יורד לפי תאריך.
     /// </summary>
-    public IEnumerable<(string ReceiptNumber, decimal Amount)> GetFlattenedReceiptsReport(int eventId)
+    public IEnumerable<ReceiptReportEntry> GetFlattenedReceiptsReport(int eventId)
     {
         return GetEventVendors(eventId)
             .SelectMany(v => v.Receipts)
             .OrderByDescending(r => r.Date)
-            .Select(r => (r.ReceiptNumber, r.Amount));
+            .Select(r => new ReceiptReportEntry(r.ReceiptNumber, r.Amount));
     }
 
     /// <summary>

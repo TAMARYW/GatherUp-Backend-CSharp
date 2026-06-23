@@ -1,16 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ArrayOfVendorAllocation xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <VendorAllocation Id="1" HasReceipt="true">
-    <Name>קייטרינג אסאדו דלוקס</Name>
-    <AmountOwed>5000.00</AmountOwed>
+  <VendorAllocation Id="700" HasReceipt="true">
+    <Name>קייטרינג לוי בשרים</Name>
+    <AmountOwed>550</AmountOwed>
     <Receipts>
-      <Receipt ReceiptNumber="1875">
-        <Amount>600</Amount>
-        <Date>2026-06-28T00:00:00</Date>
-      </Receipt>
-      <Receipt ReceiptNumber="777">
-        <Amount>60</Amount>
-        <Date>2026-06-20T00:00:00</Date>
+      <Receipt ReceiptNumber="1857">
+        <Amount>250</Amount>
+        <Date>2026-06-22T00:00:00</Date>
       </Receipt>
     </Receipts>
   </VendorAllocation>

@@ -1,67 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ArrayOfEvent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Event Id="1">
-    <Name>ערב גיבוש צוות GatherUp</Name>
-    <Date xsi:nil="true" />
-    <Location>אולמי הגן הירוק, ראשון לציון</Location>
-    <PricePerParticipant>150.00</PricePerParticipant>
-    <EventManagerId>1</EventManagerId>
-    <EventHostId>2</EventHostId>
+    <Name>ארוחת חברים</Name>
+    <Date>2026-07-11T00:00:00</Date>
+    <Location>תל אביב מרכז</Location>
+    <PricePerParticipant>100</PricePerParticipant>
+    <EventManagerId>123456789</EventManagerId>
+    <EventHostId>329148753</EventHostId>
     <Participants>
-      <Participant PersonId="3" HasPaid="true">
-        <IsAttending>true</IsAttending>
-        <AmountContributed>300.00</AmountContributed>
-      </Participant>
-      <Participant PersonId="4" HasPaid="true">
-        <IsAttending>true</IsAttending>
-        <AmountContributed>150.00</AmountContributed>
-      </Participant>
-      <Participant PersonId="1" HasPaid="false">
-        <IsAttending>true</IsAttending>
-        <AmountContributed>0</AmountContributed>
-      </Participant>
-    </Participants>
-    <VendorIds>
-      <VendorId>1</VendorId>
-    </VendorIds>
-    <PollIds>
-      <PollId>1</PollId>
-      <PollId>2</PollId>
-    </PollIds>
-  </Event>
-  <Event Id="2">
-    <Name>ארוחת צהריים עסקית</Name>
-    <Date>2026-07-18T00:00:00</Date>
-    <Location>מסעדת הגורמה, תל אביב</Location>
-    <PricePerParticipant>120.00</PricePerParticipant>
-    <EventManagerId>3</EventManagerId>
-    <EventHostId>1</EventHostId>
-    <Participants>
-      <Participant PersonId="4" HasPaid="false">
+      <Participant PersonId="329148753" HasPaid="false">
         <IsAttending xsi:nil="true" />
         <AmountContributed>0</AmountContributed>
       </Participant>
     </Participants>
-    <VendorIds />
+    <VendorIds>
+      <VendorId>700</VendorId>
+    </VendorIds>
     <PollIds />
   </Event>
-  <Event Id="3">
-    <Name>מסיבת רווקות לשירושששש</Name>
-    <Date>2026-06-23T00:00:00</Date>
+  <Event Id="2">
+    <Name>מסיבת רווקות</Name>
+    <Date>2026-06-27T00:00:00</Date>
     <Location>קפה רימון, ירושלים</Location>
-    <PricePerParticipant>250</PricePerParticipant>
-    <EventManagerId>5</EventManagerId>
-    <EventHostId>4</EventHostId>
-    <Participants>
-      <Participant PersonId="1" HasPaid="true">
-        <IsAttending>true</IsAttending>
-        <AmountContributed>500</AmountContributed>
-      </Participant>
-    </Participants>
+    <PricePerParticipant>200</PricePerParticipant>
+    <EventManagerId>329148753</EventManagerId>
+    <EventHostId>123456789</EventHostId>
+    <Participants />
     <VendorIds />
-    <PollIds>
-      <PollId>7</PollId>
-      <PollId>8</PollId>
-    </PollIds>
+    <PollIds />
   </Event>
 </ArrayOfEvent>

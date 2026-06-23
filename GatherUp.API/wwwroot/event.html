@@ -432,8 +432,8 @@ async function loadReceiptsReport() {
     const receipts = await GatherUp.apiFetch('/api/financial/event/' + eventId + '/receipts');
     if (!receipts.length) { el.innerHTML = '<span class="muted">אין קבלות.</span>'; return; }
     el.innerHTML = `<table><thead><tr><th>מספר קבלה</th><th>סכום</th></tr></thead><tbody>
-      ${receipts.map(r => `<tr><td>${GatherUp.escapeHtml(r.receiptNumber ?? r.item1 ?? '—')}</td>
-        <td>₪${r.amount ?? r.item2 ?? '—'}</td></tr>`).join('')}
+      ${receipts.map(r => `<tr><td>${GatherUp.escapeHtml(r.receiptNumber)}</td>
+        <td>₪${r.amount}</td></tr>`).join('')}
     </tbody></table>`;
   } catch (err) { el.innerHTML = `<span class="muted">⚠️ ${GatherUp.escapeHtml(err.message)}</span>`; }
 }
@@ -491,7 +491,7 @@ document.getElementById('receipt-form').addEventListener('submit', async (e) => 
     });
     GatherUp.showToast('הקבלה הועלתה');
     document.getElementById('receipt-form').reset();
-    loadReceiptsReport();
+    loadFinancial();
   } catch (err) { GatherUp.showToast(err.message, 'error'); }
 });
 
